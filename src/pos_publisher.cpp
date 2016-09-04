@@ -48,11 +48,13 @@ int main(int argc, char **argv)
 
   std::string port;
   int baud_rate;
-  //std::string frame_id; 
+  std::string frame_id; 
+  std::string world_frame("world"); 
+
 
   priv_nh.param("port", port, std::string("/dev/ttyUSB0"));
   priv_nh.param("baud_rate", baud_rate, 115200);
-  //priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
+  priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
 
   boost::asio::io_service io;
 
@@ -65,7 +67,9 @@ int main(int argc, char **argv)
       geometry_msgs::PoseStamped::Ptr pos(new geometry_msgs::PoseStamped);
       geometry_msgs::TransformStamped::Ptr transform(new geometry_msgs::TransformStamped);
 
-      //transform->header.frame_id = frame_id;
+      transform->header.frame_id = frame_id;
+      pos->header.frame_id = world_frame;
+
       pos->header.stamp = ros::Time::now();
       transform->header.stamp = ros::Time::now();
 

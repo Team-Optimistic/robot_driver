@@ -33,6 +33,8 @@
  *********************************************************************/
 
 #include <pos_driver/robotPOS.h>
+#include <math.h>
+
 
  namespace pos_driver {
  	robotPOS::robotPOS(const std::string& port, uint32_t baud_rate, boost::asio::io_service& io): port_(port),
@@ -54,18 +56,22 @@
  				if(raw_bytes[start_count] == 0xFA) {
  					start_count = 1;
  				}
- 			} else if(start_count == 1) {				
-
-	    			// Now that entire start sequence has been found, read in the rest of the message
+ 			} else if(start_count == 1) {
+    			// Now that entire start sequence has been found, read in the rest of the message
  				got_pos = true;
 
  				boost::asio::read(serial_,boost::asio::buffer(&raw_bytes[1], 12));
-
- 				//do math
+ 				float theta =0; //read in 
+ 				float radians = theta * (M_PI/180);		
 
  				transform->transform.translation.x = pos->pose.position.x = 0;
  				transform->transform.translation.y = pos->pose.position.y = 0;
  				transform->transform.translation.z = pos->pose.position.z = 0;
+
+ 				pos->pose.orientation.x = transform->transform.rotation.x = cos(radians/2);
+ 				pos->pose.orientation.y = transform->transform.rotation.y = 0;
+ 				pos->pose.orientation.z = transform->transform.rotation.z = 0;
+ 				pos->pose.orientation.w = transform->transform.rotation.w = sin(radians/2);
 
  			}
  			
