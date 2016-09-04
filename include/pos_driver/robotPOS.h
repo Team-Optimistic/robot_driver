@@ -32,7 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <geometry_msgs/Pose2D.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <string>
@@ -52,7 +53,7 @@ namespace pos_driver {
               * @brief Poll the laser to get a new scan. Blocks until a complete new scan is received or close is called.
               * @param scan LaserScan message pointer to fill in with the scan. The caller is responsible for filling in the ROS timestamp and frame_id
               */
-            void poll(geometry_msgs::Pose2D::Ptr pos);
+            void poll(geometry_msgs::PoseStamped::Ptr pos, geometry_msgs::TransformStamped::Ptr transform);
 
             /**
               * @brief Close the driver down and prevent the polling loop from advancing

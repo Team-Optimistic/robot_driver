@@ -33,7 +33,9 @@
  *********************************************************************/
 
 #include <ros/ros.h>
-#include <geometry_msgs/Pose2D.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TransformStamped.h>
+
 #include <boost/asio.hpp>
 #include <pos_driver/robotPOS.h>
 #include <std_msgs/UInt16.h>
@@ -56,15 +58,20 @@ int main(int argc, char **argv)
 
   try {
     pos_driver::robotPOS robot(port, baud_rate, io);
-    ros::Publisher pos_pub = n.advertise<geometry_msgs::Pose2D>("pos", 1000);
+    ros::Publisher pos_pub = n.advertise<geometry_msgs::PoseStamped>("pos", 1000);
+    ros::Publisher transform_pub = n.advertise<geometry_msgs::TransformStamped>("transform", 1000);
 
     while (ros::ok()) {
-      geometry_msgs::Pose2D::Ptr pos(new geometry_msgs::Pose2D);
-      //scan->header.frame_id = frame_id;
-      //pos->header.stamp = ros::Time::now();
+      geometry_msgs::PoseStamped::Ptr pos(new geometry_msgs::PoseStamped);
+      geometry_msgs::TransformStamped::Ptr transform(new geometry_msgs::TransformStamped);
 
-      robot.poll(pos);
+      //transform->header.frame_id = frame_id;
+      pos->header.stamp = ros::Time::now();
+      transform->header.stamp = ros::Time::now();
+
+      robot.poll(pos , transform);
       pos_pub.publish(pos);
+      transform_pub.publish(transform);
 
     }
     robot.close();
