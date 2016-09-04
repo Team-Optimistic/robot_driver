@@ -69,6 +69,7 @@ int main(int argc, char **argv)
 
       transform->header.frame_id = frame_id;
       pos->header.frame_id = world_frame;
+      transform->child_frame_id = world_frame;
 
       pos->header.stamp = ros::Time::now();
       transform->header.stamp = ros::Time::now();
