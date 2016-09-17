@@ -34,7 +34,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/TransformStamped.h>
+#include <tf/transform_broadcaster.h>
 
 #include <boost/asio.hpp>
 #include <pos_driver/robotPOS.h>
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "pos_publisher");
   ros::NodeHandle n;
   ros::NodeHandle priv_nh("~");
-
+  tf::TransformBroadcaster br;
   std::string port;
   int baud_rate;
   std::string frame_id; 
@@ -57,26 +57,29 @@ int main(int argc, char **argv)
   priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
 
   boost::asio::io_service io;
+  tf::Transform transform;
 
   try {
     pos_driver::robotPOS robot(port, baud_rate, io);
     ros::Publisher pos_pub = n.advertise<geometry_msgs::PoseStamped>("pos", 1000);
-    ros::Publisher transform_pub = n.advertise<geometry_msgs::TransformStamped>("transform", 1000);
 
     while (ros::ok()) {
       geometry_msgs::PoseStamped::Ptr pos(new geometry_msgs::PoseStamped);
-      geometry_msgs::TransformStamped::Ptr transform(new geometry_msgs::TransformStamped);
 
-      transform->header.frame_id = world_frame;
       pos->header.frame_id = world_frame;
-      transform->child_frame_id = frame_id;
+      pos->header.stamp = ros::Time::now();      
 
-      pos->header.stamp = ros::Time::now();
-      transform->header.stamp = ros::Time::now();
+      robot.poll(pos);
 
-      robot.poll(pos , transform);
+      geometry_msgs::Point xyz = pos->pose.position;
+      geometry_msgs::Quaternion direction = pos->pose.orientation;
+      transform.setRotation( tf::Quaternion(direction.x, direction.y, direction.z, direction.w) );
+      transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
+      br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
+
+
+
       pos_pub.publish(pos);
-      transform_pub.publish(transform);
 
     }
     robot.close();

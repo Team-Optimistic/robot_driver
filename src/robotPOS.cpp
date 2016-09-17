@@ -45,7 +45,7 @@
  		serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
  	}
 
- 	void robotPOS::poll(geometry_msgs::PoseStamped::Ptr pos, geometry_msgs::TransformStamped::Ptr transform){
+ 	void robotPOS::poll(geometry_msgs::PoseStamped::Ptr pos){
 
  		uint8_t start_count = 0;
  		bool got_pos = false;
@@ -74,14 +74,14 @@
 
 
 
- 				transform->transform.translation.x = pos->pose.position.x = x;
- 				transform->transform.translation.y = pos->pose.position.y = 0;
- 				transform->transform.translation.z = pos->pose.position.z = 0;
+ 				pos->pose.position.x = x;
+ 				pos->pose.position.y = 0;
+ 				pos->pose.position.z = 0;
 
- 				pos->pose.orientation.x = transform->transform.rotation.x = cos(radians/2);
- 				pos->pose.orientation.y = transform->transform.rotation.y = 0;
- 				pos->pose.orientation.z = transform->transform.rotation.z = 0;
- 				pos->pose.orientation.w = transform->transform.rotation.w = sin(radians/2);
+ 				pos->pose.orientation.x =  cos(radians/2);
+ 				pos->pose.orientation.y =  0;
+ 				pos->pose.orientation.z =  0;
+ 				pos->pose.orientation.w =  sin(radians/2);
 
  				x += 0.125;
 
