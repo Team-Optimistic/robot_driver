@@ -34,6 +34,9 @@
 
 #include <pos_driver/robotPOS.h>
 #include <math.h>
+#include <ros/ros.h>
+
+ float x = 0;
 
 
  namespace pos_driver {
@@ -62,9 +65,16 @@
 
  				boost::asio::read(serial_,boost::asio::buffer(&raw_bytes[1], 12));
  				float theta =0; //read in 
- 				float radians = theta * (M_PI/180);		
+ 				float radians = theta * (M_PI/180);	
 
- 				transform->transform.translation.x = pos->pose.position.x = 0;
+ 				// for(int i = 0; i < 13; i++)
+ 				// {
+ 				// 	ROS_INFO("%X",raw_bytes[i]);
+ 				// }	
+
+
+
+ 				transform->transform.translation.x = pos->pose.position.x = x;
  				transform->transform.translation.y = pos->pose.position.y = 0;
  				transform->transform.translation.z = pos->pose.position.z = 0;
 
@@ -72,6 +82,8 @@
  				pos->pose.orientation.y = transform->transform.rotation.y = 0;
  				pos->pose.orientation.z = transform->transform.rotation.z = 0;
  				pos->pose.orientation.w = transform->transform.rotation.w = sin(radians/2);
+
+ 				x += 0.125;
 
  			}
  			
