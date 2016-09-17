@@ -67,9 +67,9 @@ int main(int argc, char **argv)
       geometry_msgs::PoseStamped::Ptr pos(new geometry_msgs::PoseStamped);
       geometry_msgs::TransformStamped::Ptr transform(new geometry_msgs::TransformStamped);
 
-      transform->header.frame_id = frame_id;
+      transform->header.frame_id = world_frame;
       pos->header.frame_id = world_frame;
-      transform->child_frame_id = world_frame;
+      transform->child_frame_id = frame_id;
 
       pos->header.stamp = ros::Time::now();
       transform->header.stamp = ros::Time::now();
