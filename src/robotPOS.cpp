@@ -83,7 +83,7 @@
  				pos->pose.orientation.z =  0;
  				pos->pose.orientation.w =  sin(radians/2);
 
- 				x += 0.125;
+ 				x += 0.000125;
 
  			}
  			

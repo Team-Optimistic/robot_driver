@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   std::string port;
   int baud_rate;
   std::string frame_id; 
-  std::string world_frame("/world"); 
+  std::string world_frame("world"); 
 
 
   priv_nh.param("port", port, std::string("/dev/ttyUSB0"));
