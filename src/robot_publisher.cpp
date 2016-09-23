@@ -37,7 +37,7 @@
 #include <tf/transform_broadcaster.h>
 
 #include <boost/asio.hpp>
-#include <pos_driver/robotPOS.h>
+#include <robot_driver/robotPOS.h>
 #include <std_msgs/UInt16.h>
 
 int main(int argc, char **argv)

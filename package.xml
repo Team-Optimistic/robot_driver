@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package>
-  <name>pos_driver</name>
+  <name>robot_driver</name>
   <version>0.0.1</version>
   <description>Cortex driver for publishing 2D POS</description>
 
-  <!-- One maintainer tag required, multiple allowed, one person per tag --> 
+  <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
   <maintainer email="tabor473@gmail.com">Griffin</maintainer>

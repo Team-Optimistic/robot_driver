@@ -32,7 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <pos_driver/robotPOS.h>
+#include <robot_driver/robotPOS.h>
 #include <math.h>
 #include <ros/ros.h>
 
@@ -50,7 +50,7 @@
  		uint8_t start_count = 0;
  		bool got_pos = false;
  		boost::array<uint8_t, 13> raw_bytes;
- 		
+
  		int index;
  		while (!shutting_down_ && !got_pos) {
 	// Wait until first data sync of frame: 0xFA, 0xA0
@@ -64,13 +64,13 @@
  				got_pos = true;
 
  				boost::asio::read(serial_,boost::asio::buffer(&raw_bytes[1], 12));
- 				float theta =0; //read in 
- 				float radians = theta * (M_PI/180);	
+ 				float theta =0; //read in
+ 				float radians = theta * (M_PI/180);
 
  				// for(int i = 0; i < 13; i++)
  				// {
  				// 	ROS_INFO("%X",raw_bytes[i]);
- 				// }	
+ 				// }
 
 
 
@@ -86,7 +86,7 @@
  				x += 0.000125;
 
  			}
- 			
+
  		}
  	}
 

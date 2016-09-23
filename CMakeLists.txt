@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(pos_driver)
+project(robot_driver)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -71,16 +71,16 @@ include_directories(include
 
 ## Declare a cpp executable
 # add_executable(xv_11_laser_driver_node src/xv_11_laser_driver_node.cpp)
-add_executable(pos_publisher 
-	src/pos_publisher.cpp
+add_executable(robot_publisher
+	src/robot_publisher.cpp
 	src/robotPOS.cpp
 )
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(pos_publisher  pos_driver_generate_messages_cpp)
+add_dependencies(robot_publisher  pos_driver_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(pos_publisher
+target_link_libraries(robot_publisher
   ${catkin_LIBRARIES}
 )
 
@@ -99,7 +99,7 @@ target_link_libraries(pos_publisher
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS pos_publisher
+install(TARGETS robot_publisher
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -138,4 +138,3 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
