@@ -42,14 +42,14 @@
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "pos_publisher");
+  ros::init(argc, argv, "robot_publisher");
   ros::NodeHandle n;
   ros::NodeHandle priv_nh("~");
   tf::TransformBroadcaster br;
   std::string port;
   int baud_rate;
-  std::string frame_id; 
-  std::string world_frame("world"); 
+  std::string frame_id;
+  std::string world_frame("world");
 
 
   priv_nh.param("port", port, std::string("/dev/ttyUSB0"));
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
       geometry_msgs::PoseStamped::Ptr pos(new geometry_msgs::PoseStamped);
 
       pos->header.frame_id = world_frame;
-      pos->header.stamp = ros::Time::now();      
+      pos->header.stamp = ros::Time::now();
 
       robot.poll(pos);
 
