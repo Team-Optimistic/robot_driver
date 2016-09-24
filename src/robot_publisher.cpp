@@ -37,6 +37,7 @@
 #include <tf/transform_broadcaster.h>
 #include <boost/asio.hpp>
 #include <std_msgs/UInt16.h>
+#include <nav_msgs/Odometry.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -61,25 +62,40 @@ int main(int argc, char **argv)
 
   try {
     pos_driver::robotPOS robot(port, baud_rate, io);
-    ros::Publisher pos_pub = n.advertise<geometry_msgs::PoseStamped>("pos", 1000);
+    // ros::Publisher pos_pub = n.advertise<geometry_msgs::PoseStamped>("pos", 1000);
+    ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("odometry/filtered", 1000);
 
     while (ros::ok()) {
-      geometry_msgs::PoseStamped::Ptr pos(new geometry_msgs::PoseStamped);
+      // geometry_msgs::PoseStamped::Ptr pos(new geometry_msgs::PoseStamped);
+      nav_msgs::Odometry odomOut;
 
-      pos->header.frame_id = world_frame;
-      pos->header.stamp = ros::Time::now();
+      // pos->header.frame_id = world_frame;
+      // pos->header.stamp = ros::Time::now();
 
-      robot.poll(pos);
+      robot.poll(&odomOut);
 
-      geometry_msgs::Point xyz = pos->pose.position;
-      geometry_msgs::Quaternion direction = pos->pose.orientation;
+      // geometry_msgs::Point xyz = pos->pose.position;
+      // geometry_msgs::Quaternion direction = pos->pose.orientation;
+      // transform.setRotation( tf::Quaternion(direction.x, direction.y, direction.z, direction.w) );
+      // transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
+      // br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
+
+      geometry_msgs::Point xyz = odomOut.pose.pose.position;
+      geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
       transform.setRotation( tf::Quaternion(direction.x, direction.y, direction.z, direction.w) );
       transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
 
+      // odomOut.header.frame_id = world_frame;
+      // odomOut.header.stamp = ros::Time::now();
+      // odomOut.child_frame_id = world_frame; // TODO: This is for Twist, should it not be world_frame?
+      // odomOut.pose.pose.position = pos.position;
+      // odomOut.pose.pose.orientation = pos.orientation;
+      // odomOut.pose.covariance = ODOM_COV_MAT;
+      // odomOut.twist.twist.linear
 
-
-      pos_pub.publish(pos);
+      // pos_pub.publish(pos);
+      odomPub.publish(odomOut);
 
     }
     robot.close();

@@ -33,7 +33,6 @@
  *********************************************************************/
 
 #include <math.h>
-#include <ros/ros.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -46,22 +45,25 @@ float x = 0;
  		serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
  	}
 
- 	void robotPOS::poll(geometry_msgs::PoseStamped::Ptr pos){
-
+ 	void robotPOS::poll(nav_msgs::Odometry *odom)
+  {
  		uint8_t start_count = 0;
  		bool got_pos = false;
  		boost::array<uint8_t, 13> raw_bytes;
 
  		int index;
- 		while (!shutting_down_ && !got_pos) {
-	// Wait until first data sync of frame: 0xFA, 0xA0
+ 		while (!shutting_down_ && !got_pos)
+    {
+	     // Wait until first data sync of frame: 0xFA, 0xA0
  			boost::asio::read(serial_, boost::asio::buffer(&raw_bytes[start_count],1));
- 			if(start_count == 0) {
- 				if(raw_bytes[start_count] == 0xFA) {
+ 			if(start_count == 0)
+      {
+ 				if(raw_bytes[start_count] == 0xFA)
  					start_count = 1;
- 				}
- 			} else if(start_count == 1) {
-    			// Now that entire start sequence has been found, read in the rest of the message
+      }
+ 			else if(start_count == 1)
+      {
+  			// Now that entire start sequence has been found, read in the rest of the message
  				got_pos = true;
 
  				boost::asio::read(serial_,boost::asio::buffer(&raw_bytes[1], 12));
@@ -73,22 +75,40 @@ float x = 0;
  				// 	ROS_INFO("%X",raw_bytes[i]);
  				// }
 
+        // Pose
+        odom->pose.pose.position.x = x;
+        odom->pose.pose.position.y = 0;
+        odom->pose.pose.position.z = 0;
 
+        odom->pose.pose.orientation.x = cos(radians/2);
+        odom->pose.pose.orientation.y = 0;
+        odom->pose.pose.orientation.z = 0;
+        odom->pose.pose.orientation.w = sin(radians/2);
 
- 				pos->pose.position.x = x;
- 				pos->pose.position.y = 0;
- 				pos->pose.position.z = 0;
+        odom->pose.covariance = ODOM_POSE_COV_MAT;
 
- 				pos->pose.orientation.x =  cos(radians/2);
- 				pos->pose.orientation.y =  0;
- 				pos->pose.orientation.z =  0;
- 				pos->pose.orientation.w =  sin(radians/2);
+        // Twist
+        odom->twist.twist.linear.x = 0.000125 * (ros::Time::now() - prevTime).toSec() / 1000;
+        odom->twist.twist.linear.y = 0;
+        odom->twist.twist.linear.z = 0;
+
+        odom->twist.twist.angular.x = 0;
+        odom->twist.twist.angular.y = 0;
+        odom->twist.twist.angular.z = 0;
+
+        odom->twist.covariance = ODOM_TWIST_COV_MAT;
+
+ 			// 	pos->pose.position.x = x;
+ 			// 	pos->pose.position.y = 0;
+ 			// 	pos->pose.position.z = 0;
+        //
+ 			// 	pos->pose.orientation.x =  cos(radians/2);
+ 			// 	pos->pose.orientation.y =  0;
+ 			// 	pos->pose.orientation.z =  0;
+ 			// 	pos->pose.orientation.w =  sin(radians/2);
 
  				x += 0.000125;
-
  			}
-
  		}
  	}
-
  };
