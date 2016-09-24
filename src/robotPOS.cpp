@@ -32,11 +32,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <robot_driver/robotPOS.h>
 #include <math.h>
 #include <ros/ros.h>
 
- float x = 0;
+#include "robot_driver/robotPOS.h"
+
+float x = 0;
 
 
  namespace pos_driver {
