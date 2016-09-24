@@ -98,14 +98,14 @@ float x = 0;
 
         odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
- 			// 	pos->pose.position.x = x;
- 			// 	pos->pose.position.y = 0;
- 			// 	pos->pose.position.z = 0;
-        //
- 			// 	pos->pose.orientation.x =  cos(radians/2);
- 			// 	pos->pose.orientation.y =  0;
- 			// 	pos->pose.orientation.z =  0;
- 			// 	pos->pose.orientation.w =  sin(radians/2);
+   			// 	pos->pose.position.x = x;
+   			// 	pos->pose.position.y = 0;
+   			// 	pos->pose.position.z = 0;
+
+   			// 	pos->pose.orientation.x =  cos(radians/2);
+   			// 	pos->pose.orientation.y =  0;
+   			// 	pos->pose.orientation.z =  0;
+   			// 	pos->pose.orientation.w =  sin(radians/2);
 
  				x += 0.000125;
  			}

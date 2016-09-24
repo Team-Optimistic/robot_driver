@@ -69,18 +69,26 @@ namespace pos_driver {
 
             ros::Time prevTime; //previous time of last poll
 
+            //Matrix format is x,y,z,rotx,roty,rotz
             const boost::array<float, 36> ODOM_POSE_COV_MAT =
             {{
-              0, 0, 0,
-              0, 0, 0,
-              0, 0, 0
+              0.01, 0,    0,    0,   0,   0,
+              0,    0.01, 0,    0,   0,   0,
+              0,    0,    0.01, 0,   0,   0,
+              0,    0,    0,    0,   0,   0,
+              0,    0,    0,    0,   0,   0,
+              0,    0,    0,    0,   0,   0
             }}; //Odometry pose covariance matrix
 
+            //Matrix format is x,y,z,rotx,roty,rotz
             const boost::array<float, 36> ODOM_TWIST_COV_MAT =
             {{
-              0, 0, 0,
-              0, 0, 0,
-              0, 0, 0
+              0.01, 0,    0,    0,   0,   0,
+              0,    0.01, 0,    0,   0,   0,
+              0,    0,    0.01, 0,   0,   0,
+              0,    0,    0,    0,   0,   0,
+              0,    0,    0,    0,   0,   0,
+              0,    0,    0,    0,   0,   0
             }}; //Odometry twist covariance matrix
     };
 };
