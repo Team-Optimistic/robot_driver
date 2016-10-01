@@ -1,5 +1,6 @@
 <launch>
   <node pkg="robot_driver" type="robot_publisher" name="robot_publisher" clear_params="true">
+    <param name="port" value="/dev/ttyS0" />
   </node>
 
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">

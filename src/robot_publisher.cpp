@@ -54,7 +54,8 @@ int main(int argc, char **argv)
   std::string world_frame("map"), base_link_frame("base_link");
 
 
-  priv_nh.param("port", port, std::string("/dev/ttyUSB0"));
+  // priv_nh.param("port", port, std::string("/dev/ttyS0"));
+  n.getParam("port", port);
   priv_nh.param("baud_rate", baud_rate, 9600);
   priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
 
@@ -62,11 +63,13 @@ int main(int argc, char **argv)
   tf::Transform transform;
 
   try {
+    //pos_driver::robotPOS robot(port, baud_rate, io);
     pos_driver::robotPOS robot(port, baud_rate, io);
     ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
                    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
 
-    while (ros::ok()) {
+    while (ros::ok())
+    {
       nav_msgs::Odometry odomOut;
       sensor_msgs::Imu imuOut;
 
@@ -90,7 +93,9 @@ int main(int argc, char **argv)
     }
     robot.close();
     return 0;
-  } catch (boost::system::system_error ex) {
+  }
+  catch (boost::system::system_error ex)
+  {
     ROS_ERROR("Error instantiating robot object. Are you sure you have the correct port and baud rate? Error was %s", ex.what());
     return -1;
   }
