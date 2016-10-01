@@ -72,23 +72,23 @@ namespace pos_driver {
             //Matrix format is x,y,z,rotx,roty,rotz
             const boost::array<float, 36> ODOM_POSE_COV_MAT =
             {{
-              0.01, 0,    0,    0,   0,   0,
-              0,    0.01, 0,    0,   0,   0,
-              0,    0,    0.01, 0,   0,   0,
-              0,    0,    0,    0,   0,   0,
-              0,    0,    0,    0,   0,   0,
-              0,    0,    0,    0,   0,   0
+              0.01, 0,    0,    0,    0,    0,
+              0,    0.01, 0,    0,    0,    0,
+              0,    0,    0.01, 0,    0,    0,
+              0,    0,    0,    0.01, 0,    0,
+              0,    0,    0,    0,    0.01, 0,
+              0,    0,    0,    0,    0,    0.01
             }}; //Odometry pose covariance matrix
 
             //Matrix format is x,y,z,rotx,roty,rotz
             const boost::array<float, 36> ODOM_TWIST_COV_MAT =
             {{
-              0.01, 0,    0,    0,   0,   0,
-              0,    0.01, 0,    0,   0,   0,
-              0,    0,    0.01, 0,   0,   0,
-              0,    0,    0,    0,   0,   0,
-              0,    0,    0,    0,   0,   0,
-              0,    0,    0,    0,   0,   0
+              0.01, 0,    0,    0,    0,    0,
+              0,    0.01, 0,    0,    0,    0,
+              0,    0,    0.01, 0,    0,    0,
+              0,    0,    0,    0.01, 0,    0,
+              0,    0,    0,    0,    0.01, 0,
+              0,    0,    0,    0,    0,    0.01
             }}; //Odometry twist covariance matrix
     };
 };
