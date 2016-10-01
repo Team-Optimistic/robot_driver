@@ -45,7 +45,7 @@ float x = 0;
  		serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
  	}
 
- 	void robotPOS::poll(nav_msgs::Odometry *odom)
+ 	void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   {
  		uint8_t start_count = 0;
  		bool got_pos = false;
@@ -97,6 +97,8 @@ float x = 0;
         odom->twist.twist.angular.z = 0;
 
         odom->twist.covariance = ODOM_TWIST_COV_MAT;
+
+        //TODO: Fill imu message
 
    			// 	pos->pose.position.x = x;
    			// 	pos->pose.position.y = 0;

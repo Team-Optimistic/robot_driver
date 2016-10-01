@@ -33,6 +33,7 @@
  *********************************************************************/
 
 #include <nav_msgs/Odometry.h>
+#include <sensor_msgs/Imu.h>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <string>
@@ -53,7 +54,7 @@ namespace pos_driver {
               * @brief Poll the laser to get a new scan. Blocks until a complete new scan is received or close is called.
               * @param scan LaserScan message pointer to fill in with the scan. The caller is responsible for filling in the ROS timestamp and frame_id
               */
-            void poll(nav_msgs::Odometry *odom);
+            void poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu);
 
             /**
               * @brief Close the driver down and prevent the polling loop from advancing

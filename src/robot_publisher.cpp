@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   std::string port;
   int baud_rate;
   std::string frame_id;
-  std::string world_frame("world");
+  std::string world_frame("map"), base_link_frame("base_link");
 
 
   priv_nh.param("port", port, std::string("/dev/ttyUSB0"));
@@ -68,12 +68,16 @@ int main(int argc, char **argv)
 
     while (ros::ok()) {
       nav_msgs::Odometry odomOut;
+      sensor_msgs::Imu imuOut;
 
       odomOut.header.frame_id = world_frame;
       odomOut.header.stamp = ros::Time::now();
-      odomOut.child_frame_id = world_frame; // TODO: This is for Twist, should it not be world_frame?
+      odomOut.child_frame_id = base_link_frame;
 
-      robot.poll(&odomOut);
+      imuOut.header.frame_id = world_frame;
+      imuOut.header.stamp = ros::Time::now();
+
+      robot.poll(&odomOut, &imuOut);
 
       geometry_msgs::Point xyz = odomOut.pose.pose.position;
       geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
