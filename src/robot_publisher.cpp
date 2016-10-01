@@ -38,6 +38,7 @@
 #include <boost/asio.hpp>
 #include <std_msgs/UInt16.h>
 #include <nav_msgs/Odometry.h>
+#include <sensor_msgs/Imu.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
   try {
     pos_driver::robotPOS robot(port, baud_rate, io);
     ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
-                   imuPub = n.advertise<sensor_msgs:Imu>("robot_publisher/imu0", 1000);
+                   imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
 
     while (ros::ok()) {
       nav_msgs::Odometry odomOut;
