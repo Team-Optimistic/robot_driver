@@ -6,4 +6,10 @@
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
     <rosparam command="load" file="../params/ekf_template.yaml" />
   </node>
+
+  <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true">
+    <param name="port" value="/dev/ttyUSB0" />
+    <param name="firmware_version" value="2" />
+  </node>
+
 </launch>

@@ -53,7 +53,6 @@ int main(int argc, char **argv)
   std::string frame_id;
   std::string world_frame("map"), base_link_frame("base_link");
 
-
   // priv_nh.param("port", port, std::string("/dev/ttyS0"));
   n.getParam("port", port);
   priv_nh.param("baud_rate", baud_rate, 9600);
