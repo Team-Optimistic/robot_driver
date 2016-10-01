@@ -1,0 +1,8 @@
+<launch>
+  <node pkg="robot_driver" type="robot_publisher" name="robot_publisher" clear_params="true">
+  </node>
+
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
+    <rosparam command="load" file="../params/ekf_template.yaml" />
+  </node>
+</launch>
