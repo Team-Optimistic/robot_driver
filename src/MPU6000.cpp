@@ -1,8 +1,10 @@
 #include "robot_driver/MPU6000.h"
+#include <wiringPiSPI.h>
+
  
 mpu6000::mpu6000(int csChannel, int speed) {
     channel=csChannel;
-    //wiringPiSPISetup(channel,speed) ;
+    wiringPiSPISetup(channel,speed) ;
 
 }
  
