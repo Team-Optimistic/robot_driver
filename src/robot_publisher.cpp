@@ -61,9 +61,9 @@ int main(int argc, char **argv)
   boost::asio::io_service io;
   tf::Transform transform;
 
-  try {
-    //pos_driver::robotPOS robot(port, baud_rate, io);
-    pos_driver::robotPOS robot(port, baud_rate, io);
+  try 
+  {
+   robotPOS robot(port, baud_rate, io);
     ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
                    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
 

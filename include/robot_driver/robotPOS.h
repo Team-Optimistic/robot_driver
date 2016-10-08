@@ -39,57 +39,55 @@
 #include <string>
 #include <ros/ros.h>
 
-namespace pos_driver {
-    class robotPOS {
-        public:
+class robotPOS 
+{
+    public:
+        robotPOS(const std::string& port, uint32_t baud_rate, boost::asio::io_service& io);
 
-            robotPOS(const std::string& port, uint32_t baud_rate, boost::asio::io_service& io);
+        /**
+          * @brief Default destructor
+          */
+        ~robotPOS() {};
 
-            /**
-              * @brief Default destructor
-              */
-            ~robotPOS() {};
+        /**
+          * @brief Poll the laser to get a new scan. Blocks until a complete new scan is received or close is called.
+          * @param scan LaserScan message pointer to fill in with the scan. The caller is responsible for filling in the ROS timestamp and frame_id
+          */
+        void poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu);
 
-            /**
-              * @brief Poll the laser to get a new scan. Blocks until a complete new scan is received or close is called.
-              * @param scan LaserScan message pointer to fill in with the scan. The caller is responsible for filling in the ROS timestamp and frame_id
-              */
-            void poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu);
+        /**
+          * @brief Close the driver down and prevent the polling loop from advancing
+          */
+        void close() { shutting_down_ = true; };
 
-            /**
-              * @brief Close the driver down and prevent the polling loop from advancing
-              */
-            void close() { shutting_down_ = true; };
+    private:
+        std::string port_; ///< @brief The serial port the driver is attached to
+        uint32_t baud_rate_; ///< @brief The baud rate for the serial connection
 
-        private:
-            std::string port_; ///< @brief The serial port the driver is attached to
-            uint32_t baud_rate_; ///< @brief The baud rate for the serial connection
+        bool shutting_down_; ///< @brief Flag for whether the driver is supposed to be shutting down or not
+        boost::asio::serial_port serial_; ///< @brief Actual serial port object for reading/writing to the XV11 Laser Scanner
 
-            bool shutting_down_; ///< @brief Flag for whether the driver is supposed to be shutting down or not
-            boost::asio::serial_port serial_; ///< @brief Actual serial port object for reading/writing to the XV11 Laser Scanner
+        ros::Time prevTime; //previous time of last poll
 
-            ros::Time prevTime; //previous time of last poll
+        //Matrix format is x,y,z,rotx,roty,rotz
+        const boost::array<float, 36> ODOM_POSE_COV_MAT =
+        {{
+          0.01, 0,    0,    0,    0,    0,
+          0,    0.01, 0,    0,    0,    0,
+          0,    0,    0.01, 0,    0,    0,
+          0,    0,    0,    0.01, 0,    0,
+          0,    0,    0,    0,    0.01, 0,
+          0,    0,    0,    0,    0,    0.01
+        }}; //Odometry pose covariance matrix
 
-            //Matrix format is x,y,z,rotx,roty,rotz
-            const boost::array<float, 36> ODOM_POSE_COV_MAT =
-            {{
-              0.01, 0,    0,    0,    0,    0,
-              0,    0.01, 0,    0,    0,    0,
-              0,    0,    0.01, 0,    0,    0,
-              0,    0,    0,    0.01, 0,    0,
-              0,    0,    0,    0,    0.01, 0,
-              0,    0,    0,    0,    0,    0.01
-            }}; //Odometry pose covariance matrix
-
-            //Matrix format is x,y,z,rotx,roty,rotz
-            const boost::array<float, 36> ODOM_TWIST_COV_MAT =
-            {{
-              0.01, 0,    0,    0,    0,    0,
-              0,    0.01, 0,    0,    0,    0,
-              0,    0,    0.01, 0,    0,    0,
-              0,    0,    0,    0.01, 0,    0,
-              0,    0,    0,    0,    0.01, 0,
-              0,    0,    0,    0,    0,    0.01
-            }}; //Odometry twist covariance matrix
-    };
+        //Matrix format is x,y,z,rotx,roty,rotz
+        const boost::array<float, 36> ODOM_TWIST_COV_MAT =
+        {{
+          0.01, 0,    0,    0,    0,    0,
+          0,    0.01, 0,    0,    0,    0,
+          0,    0,    0.01, 0,    0,    0,
+          0,    0,    0,    0.01, 0,    0,
+          0,    0,    0,    0,    0.01, 0,
+          0,    0,    0,    0,    0,    0.01
+        }}; //Odometry twist covariance matrix
 };
