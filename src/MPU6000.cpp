@@ -61,6 +61,7 @@ bool mpu6000::init(int sample_rate_div,int low_pass_filter){
     response=write(MPUREG_WHOAMI|READ_FLAG);
     response=write(0x00);
     deselect();
+    std::cout <<response <<std::endl;
     if(response<100){return 0;}//COULDN'T RECEIVE WHOAMI
     //SET SAMPLE RATE
     select();
