@@ -41,6 +41,7 @@
 #include <sensor_msgs/Imu.h>
 
 #include "robot_driver/robotPOS.h"
+#include "robot_driver/MPU6000.h"
 
 int main(int argc, char **argv)
 {

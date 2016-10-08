@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs tf)
+find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs geometry_msgs tf)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
@@ -75,6 +75,7 @@ include_directories(include
 add_executable(robot_publisher
 	src/robot_publisher.cpp
 	src/robotPOS.cpp
+	src/MPU6000.cpp
 )
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
