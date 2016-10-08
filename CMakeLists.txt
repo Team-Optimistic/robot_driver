@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(robot_driver)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" -lwiringPi)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs geometry_msgs tf)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(WiringPi REQUIRED)
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/groovy/api/catkin/html/user_guide/setup_dot_py.html
@@ -63,6 +63,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include
   ${catkin_INCLUDE_DIRS}
+  ${WIRINGPI_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -84,6 +85,7 @@ add_dependencies(robot_publisher  robot_driver_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(robot_publisher
   ${catkin_LIBRARIES}
+  ${WIRINGPI_LIBRARIES}	
 )
 
 #############
