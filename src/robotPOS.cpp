@@ -38,8 +38,7 @@
 
 float x = 0;
 
-namespace pos_driver
-{
+
 robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io)
     : port_(port)
     , baud_rate_(baud_rate)
@@ -129,4 +128,3 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
         }
     }
 }
-};
