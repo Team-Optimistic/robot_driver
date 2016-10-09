@@ -1,5 +1,6 @@
 #include "robot_driver/MPU6000.h"
 #include <wiringPiSPI.h>
+#include <iostream>
 
  
 mpu6000::mpu6000(int csChannel, int speed) {
@@ -25,8 +26,8 @@ returns 1 if an error occurred
 unsigned char mpu6000::write(unsigned char dataIn){
     unsigned char buff[1] = {dataIn}; 
 
-    //wiringPiSPIDataRW (channel, buff,1);
-
+    wiringPiSPIDataRW (channel, buff,1);
+    std::cout <<(int) buff[0] << std::endl;
     return buff[0];
 
 
