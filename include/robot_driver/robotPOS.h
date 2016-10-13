@@ -39,7 +39,7 @@
 #include <string>
 #include <ros/ros.h>
 
-class robotPOS 
+class robotPOS
 {
     public:
         robotPOS(const std::string& port, uint32_t baud_rate, boost::asio::io_service& io);
@@ -90,4 +90,12 @@ class robotPOS
           0,    0,    0,    0,    0.01, 0,
           0,    0,    0,    0,    0,    0.01
         }}; //Odometry twist covariance matrix
+        
+        uint8_t outMsgCount = 0;
+
+        /**
+          * @brief Callback for subscription to ekf estimate. Sends estimate and
+          * commands to robot.
+          */
+        void publish_callback(const nav_msgs::Odometry& in);
 };

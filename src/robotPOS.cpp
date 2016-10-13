@@ -33,6 +33,7 @@
  *********************************************************************/
 
 #include <math.h>
+#include <geometry_msgs/Quaternion.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -56,15 +57,15 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     boost::array<uint8_t, 2> out_data;
 
     int index;
-    while(!shutting_down_ && !got_pos) 
+    while(!shutting_down_ && !got_pos)
     {
         // Wait until first data sync of frame: 0xFA, 0xA0
         boost::asio::read(serial_, boost::asio::buffer(&raw_bytes[start_count], 1));
-        if(start_count == 0) 
+        if(start_count == 0)
         {
             if(raw_bytes[start_count] == 0xFA) start_count = 1;
         }
-        else if(start_count == 1) 
+        else if(start_count == 1)
         {
             // Now that entire start sequence has been found, read in the rest of the message
             got_pos = true;
@@ -107,10 +108,10 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
             odom->twist.twist.angular.z = 0;
 
             odom->twist.covariance = ODOM_TWIST_COV_MAT;
-            
+
             out_data[0] = 42;
             out_data[1] = 24;
-            
+
             boost::asio::write(serial_,  boost::asio::buffer(&out_data[0], 2));
 
             // TODO: Fill imu message
@@ -127,4 +128,25 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
             x += 0.000125;
         }
     }
+}
+
+void robotPos::publish_callback(const nav_msgs::Odometry& in)
+{
+  boost::array<uint8_t, 7> out;
+
+  out[0] = outMsgCount++;
+  out[1] = in.pose.pose.position.x;
+  out[2] = in.pose.pose.position.y;
+  const geometry_msgs::Quaternion quat = in.pose.pose.orientation;
+  out[3] = atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))) /
+                ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
+  out[4] = 0;
+  out[5] = 0;
+  out[6] = 0;
+
+  //Send start byte
+  boost::asio::write(serial_, boost::asio::buffer(0xFA));
+
+  //Send data
+  boost::asio::write(serial_,  boost::asio::buffer(&out[0], 7));
 }
