@@ -97,7 +97,9 @@ class robotPOS
           0,    0,    0,    0,    0,    0.01
         }}; //Odometry twist covariance matrix
 
+        //Counter for messages sent to cortex
         uint8_t outMsgCount = 0;
 
+        //Starting flag for sending a message to the cortex
         const boost::array<uint8_t, 1> startFlag  = {{0xFA}};
 };
