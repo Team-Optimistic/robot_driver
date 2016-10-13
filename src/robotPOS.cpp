@@ -53,18 +53,17 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     uint8_t start_count = 0;
     bool got_pos = false;
     boost::array<uint8_t, 13> raw_bytes;
-    boost::array<uint8_t, 2> out_data;
 
     int index;
-    while(!shutting_down_ && !got_pos) 
+    while(!shutting_down_ && !got_pos)
     {
         // Wait until first data sync of frame: 0xFA, 0xA0
         boost::asio::read(serial_, boost::asio::buffer(&raw_bytes[start_count], 1));
-        if(start_count == 0) 
+        if(start_count == 0)
         {
             if(raw_bytes[start_count] == 0xFA) start_count = 1;
         }
-        else if(start_count == 1) 
+        else if(start_count == 1)
         {
             // Now that entire start sequence has been found, read in the rest of the message
             got_pos = true;
@@ -107,11 +106,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
             odom->twist.twist.angular.z = 0;
 
             odom->twist.covariance = ODOM_TWIST_COV_MAT;
-            
-            out_data[0] = 42;
-            out_data[1] = 24;
-            
-            boost::asio::write(serial_,  boost::asio::buffer(&out_data[0], 2));
 
             // TODO: Fill imu message
 
