@@ -64,8 +64,7 @@ class robotPOS
           * @brief Callback for subscription to ekf estimate. Sends estimate and
           * commands to robot.
           */
-        void publish_callback(const nav_msgs::Odometry& in);
-
+        void publish_callback(const nav_msgs::Odometry::ConstPtr& in);
     private:
         std::string port_; ///< @brief The serial port the driver is attached to
         uint32_t baud_rate_; ///< @brief The baud rate for the serial connection
