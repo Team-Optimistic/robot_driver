@@ -52,7 +52,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
     uint8_t start_count = 0;
     bool got_pos = false;
-    boost::array<uint8_t, 13> raw_bytes;
+    boost::array<uint8_t, 6> raw_bytes;
 
     int index;
     while(!shutting_down_ && !got_pos)
@@ -69,12 +69,13 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
             got_pos = true;
 
             // Read in rest of msg
-            boost::asio::read(serial_, boost::asio::buffer(&raw_bytes[1], 4));
+            boost::asio::read(serial_, boost::asio::buffer(&raw_bytes[1], 5));
 
-            uint8_t msgCount = raw_bytes[0];
-            uint8_t intakePot = raw_bytes[1];
-            uint8_t leftQuad = raw_bytes[2];
-            uint8_t rightQuad = raw_bytes[3];
+            uint8_t msgCount = raw_bytes[1];
+            uint8_t intakePot = raw_bytes[2];
+            uint8_t leftQuad = raw_bytes[3];
+            uint8_t rightQuad = raw_bytes[4];
+            uint8_t isWorking = raw_bytes[5];
 
             float theta = 0; // read in
             float radians = theta * (M_PI / 180);
