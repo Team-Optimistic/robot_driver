@@ -33,6 +33,7 @@
  *********************************************************************/
 
 #include <math.h>
+#include <geometry_msgs/Quaternion.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -123,4 +124,25 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
             x += 0.000125;
         }
     }
+}
+
+void robotPOS::publish_callback(const nav_msgs::Odometry::ConstPtr& in)
+{
+  boost::array<uint8_t, 7> out;
+
+  out[0] = outMsgCount++;
+  out[1] = in->pose.pose.position.x;
+  out[2] = in->pose.pose.position.y;
+  const geometry_msgs::Quaternion quat = in->pose.pose.orientation;
+  out[3] = atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
+                ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
+  out[4] = 0;
+  out[5] = 0;
+  out[6] = 0;
+
+  //Send start byte
+  boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
+
+  //Send data
+  boost::asio::write(serial_,  boost::asio::buffer(&out[0], 7));
 }

@@ -39,7 +39,7 @@
 #include <string>
 #include <ros/ros.h>
 
-class robotPOS 
+class robotPOS
 {
     public:
         robotPOS(const std::string& port, uint32_t baud_rate, boost::asio::io_service& io);
@@ -60,6 +60,11 @@ class robotPOS
           */
         void close() { shutting_down_ = true; };
 
+        /**
+          * @brief Callback for subscription to ekf estimate. Sends estimate and
+          * commands to robot.
+          */
+        void publish_callback(const nav_msgs::Odometry::ConstPtr& in);
     private:
         std::string port_; ///< @brief The serial port the driver is attached to
         uint32_t baud_rate_; ///< @brief The baud rate for the serial connection
@@ -90,4 +95,10 @@ class robotPOS
           0,    0,    0,    0,    0.01, 0,
           0,    0,    0,    0,    0,    0.01
         }}; //Odometry twist covariance matrix
+
+        //Counter for messages sent to cortex
+        uint8_t outMsgCount = 0;
+
+        //Starting flag for sending a message to the cortex
+        const boost::array<uint8_t, 1> startFlag  = {{0xFA}};
 };

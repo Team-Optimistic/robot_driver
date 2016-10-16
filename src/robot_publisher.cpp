@@ -64,23 +64,28 @@ int main(int argc, char **argv)
   boost::asio::io_service io;
   tf::Transform transform;
   std::cout<<"started";
-  try 
+  try
+
+  try
   {
-    //robotPOS robot(port, baud_rate, io);
-    //ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
-    //               imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
     mpu6000 imu(0,1000000);
     std::cout <<"supposedly inited" <<std::endl;
     std::cout <<imu.init(1,BITS_DLPF_CFG_5HZ) <<std::endl;
     imu.set_gyro_scale(BITS_FS_2000DPS);
     imu.set_acc_scale(BITS_FS_16G);
-   usleep(10000);
-   while (ros::ok())
+    usleep(10000);
+
+    robotPOS robot(port, baud_rate, io);
+    ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
+                   imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
+    ros::Subscriber ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::publish_callback, &robot);
+
+    while (ros::ok())
     {
-     imu.whoami();
+      imu.whoami();
       std::cout <<imu.read_acc(1) << std::endl;
-     usleep(10000);
- /*nav_msgs::Odometry odomOut;
+      usleep(10000);
+      /*nav_msgs::Odometry odomOut;
       sensor_msgs::Imu imuOut;
 
       odomOut.header.frame_id = world_frame;
@@ -102,7 +107,8 @@ int main(int argc, char **argv)
 
 
     }
-   // robot.close();
+
+    robot.close();
     return 0;
   }
   catch (boost::system::system_error ex)
