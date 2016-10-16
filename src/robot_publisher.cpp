@@ -64,7 +64,6 @@ int main(int argc, char **argv)
   boost::asio::io_service io;
   tf::Transform transform;
   std::cout<<"started";
-  try
 
   try
   {
