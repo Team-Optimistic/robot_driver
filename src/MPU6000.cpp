@@ -25,7 +25,7 @@ returns 1 if an error occurred
 -----------------------------------------------------------------------------------------------*/
 unsigned char mpu6000::write(unsigned char dataIn){
     unsigned char buff[1] = {dataIn}; 
-
+    std::cout << (int) buff[0] << "     " ;
     wiringPiSPIDataRW (channel, buff,1);
     std::cout <<(int) buff[0] << std::endl;
     return buff[0];
