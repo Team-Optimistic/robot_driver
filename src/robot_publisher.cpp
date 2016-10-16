@@ -74,11 +74,12 @@ int main(int argc, char **argv)
     std::cout <<imu.init(1,BITS_DLPF_CFG_5HZ) <<std::endl;
     imu.set_gyro_scale(BITS_FS_2000DPS);
     imu.set_acc_scale(BITS_FS_16G);
-   usleep(1000000);
+   usleep(10000);
    while (ros::ok())
     {
-      std::cout <<imu.read_temp() << std::endl;
-     usleep(1000000);
+     imu.whoami();
+      std::cout <<imu.read_acc(1) << std::endl;
+     usleep(10000);
  /*nav_msgs::Odometry odomOut;
       sensor_msgs::Imu imuOut;
 
