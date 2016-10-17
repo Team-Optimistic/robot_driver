@@ -49,83 +49,87 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
 }
 
-void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
+/**
+ * Returns the length of a message, given its type
+ * @param  type Type of message
+ * @return      Length of message
+ */
+inline const uint8_t getMsgLengthForType(const uint8_t type) const
 {
-    uint8_t start_count = 0;
-    bool got_pos = false;
+  switch (type)
+  {
+    case std_msg_type:
+      return std_msg_length;
 
-    const int raw_bytes_size = 5;
-    boost::array<uint8_t, raw_bytes_size> raw_bytes;
+    case spc_msg_type:
+      return spc_msg_type;
 
-    int index;
-    while(!shutting_down_ && !got_pos)
-    {
-        // Wait until first data sync of frame: 0xFA, 0xA0
-        boost::asio::read(serial_, boost::asio::buffer(&raw_bytes[start_count], 1));
-        if(start_count == 0)
-        {
-            if(raw_bytes[start_count] == 0xFA) start_count = 1;
-        }
-        else if(start_count == 1)
-        {
-            // Now that entire start sequence has been found, read in the rest of the message
-            got_pos = true;
-
-            // Read in rest of msg
-            boost::asio::read(serial_, boost::asio::buffer(&raw_bytes[1], raw_bytes_size - 1));
-
-            uint8_t msgCount = raw_bytes[1];
-            uint8_t intakePot = raw_bytes[2];
-            uint8_t leftQuad = raw_bytes[3];
-            uint8_t rightQuad = raw_bytes[4];
-
-            float theta = 0; // read in
-            float radians = theta * (M_PI / 180);
-
-            // for(int i = 0; i < 13; i++)
-            // {
-            // 	ROS_INFO("%X",raw_bytes[i]);
-            // }
-
-            // Pose
-            odom->pose.pose.position.x = x;
-            odom->pose.pose.position.y = 0;
-            odom->pose.pose.position.z = 0;
-
-            odom->pose.pose.orientation.x = cos(radians / 2);
-            odom->pose.pose.orientation.y = 0;
-            odom->pose.pose.orientation.z = 0;
-            odom->pose.pose.orientation.w = sin(radians / 2);
-
-            odom->pose.covariance = ODOM_POSE_COV_MAT;
-
-            // Twist
-            odom->twist.twist.linear.x = 0.000125 * (ros::Time::now() - prevTime).toSec() / 1000;
-            odom->twist.twist.linear.y = 0;
-            odom->twist.twist.linear.z = 0;
-
-            odom->twist.twist.angular.x = 0;
-            odom->twist.twist.angular.y = 0;
-            odom->twist.twist.angular.z = 0;
-
-            odom->twist.covariance = ODOM_TWIST_COV_MAT;
-
-            // TODO: Fill imu message
-
-            // 	pos->pose.position.x = x;
-            // 	pos->pose.position.y = 0;
-            // 	pos->pose.position.z = 0;
-
-            // 	pos->pose.orientation.x =  cos(radians/2);
-            // 	pos->pose.orientation.y =  0;
-            // 	pos->pose.orientation.z =  0;
-            // 	pos->pose.orientation.w =  sin(radians/2);
-
-            x += 0.000125;
-        }
-    }
+    default:
+      return 0;
+  }
 }
 
+/**
+ * Polls UART and sets its inputs to the latest data
+ * @param odom Odometry data
+ * @param imu  IMU data
+ */
+void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
+{
+  boost::array<uint8_t, 3> flagHolders; //0 = msg, 1 = type, 2 = count
+
+  // Load start byte
+  do
+  {
+    boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
+  } while (flagHolders[0] != 0xFA);
+
+  // Load rest of header
+  boost::asio::read(serial_, boost::asio::buffer(&flagHolders[1], 2));
+
+  // Load msg
+  boost::array<uint8_t, flagHolders[2]> msgData;
+  boost::asio::read(serial_, boost::asio::buffer(&msgData[0], flagHolders[2]));
+
+  // Pose
+  odom->pose.pose.position.x = x;
+  odom->pose.pose.position.y = 0;
+  odom->pose.pose.position.z = 0;
+
+  odom->pose.pose.orientation.x = cos(radians / 2);
+  odom->pose.pose.orientation.y = 0;
+  odom->pose.pose.orientation.z = 0;
+  odom->pose.pose.orientation.w = sin(radians / 2);
+
+  odom->pose.covariance = ODOM_POSE_COV_MAT;
+
+  // Twist
+  odom->twist.twist.linear.x = 0.000125 * (ros::Time::now() - prevTime).toSec() / 1000; //B.S. data
+  odom->twist.twist.linear.y = 0;
+  odom->twist.twist.linear.z = 0;
+
+  odom->twist.twist.angular.x = 0;
+  odom->twist.twist.angular.y = 0;
+  odom->twist.twist.angular.z = 0;
+
+  odom->twist.covariance = ODOM_TWIST_COV_MAT;
+
+  // TODO: Fill imu message
+
+  // 	pos->pose.position.x = x;
+  // 	pos->pose.position.y = 0;
+  // 	pos->pose.position.z = 0;
+
+  // 	pos->pose.orientation.x =  cos(radians/2);
+  // 	pos->pose.orientation.y =  0;
+  // 	pos->pose.orientation.z =  0;
+  // 	pos->pose.orientation.w =  sin(radians/2);
+}
+
+/**
+ * Callback function for sending message to cortex
+ * @param in Odometry message to send
+ */
 void robotPOS::publish_callback(const nav_msgs::Odometry::ConstPtr& in)
 {
   boost::array<uint8_t, 7> out;
