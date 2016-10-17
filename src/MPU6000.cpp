@@ -1,6 +1,7 @@
 #include "robot_driver/MPU6000.h"
 #include <wiringPiSPI.h>
 #include <iostream>
+#include <unistd.h>
 
  
 mpu6000::mpu6000(int csChannel, int speed) {
@@ -25,9 +26,9 @@ returns 1 if an error occurred
 -----------------------------------------------------------------------------------------------*/
 unsigned char mpu6000::write(unsigned char dataIn){
     unsigned char buff[1] = {dataIn}; 
-    std::cout << (int) buff[0] << "     " ;
+    //std::cout << (int) buff[0] << "     " ;
     wiringPiSPIDataRW (channel, buff,1);
-    std::cout <<(int) buff[0] << std::endl;
+    //std::cout <<(int) buff[0] << std::endl;
     return buff[0];
 
 
@@ -46,7 +47,7 @@ bool mpu6000::init(int sample_rate_div,int low_pass_filter){
     response=write(MPUREG_PWR_MGMT_1);
     response=write(BIT_H_RESET); 
     deselect();
-    //wait(0.15);
+    usleep(150000);
     //WAKE UP AND SET GYROZ CLOCK
     select();
     response=write(MPUREG_PWR_MGMT_1);
