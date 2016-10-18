@@ -234,19 +234,23 @@ float mpu6000::read_acc(int axis){
     switch (axis){
         case 0:
         responseH=write(MPUREG_ACCEL_XOUT_H | READ_FLAG);
+	responseL=write(MPUREG_ACCEL_XOUT_L | READ_FLAG);
         break;
         case 1:
         responseH=write(MPUREG_ACCEL_YOUT_H | READ_FLAG);
+	responseL=write(MPUREG_ACCEL_YOUT_L | READ_FLAG);
         break;
         case 2:
         responseH=write(MPUREG_ACCEL_ZOUT_H | READ_FLAG);
+	responseL=write(MPUREG_ACCEL_ZOUT_L | READ_FLAG);
         break;
 	default:
 	responseH=write(MPUREG_ACCEL_XOUT_H | READ_FLAG);
+	responseL=write(MPUREG_ACCEL_XOUT_L | READ_FLAG);
 	break;
     }
-    responseH=write(0x00);
-    responseL=write(0x00);
+//    responseH=write(0x00);
+//    responseL=write(0x00);
     //bit_data=((int)responseH<<8)|responseL;
     bit_data = responseH;
     bit_data = (bit_data << 8) | responseL;
