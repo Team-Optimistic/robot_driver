@@ -3,7 +3,6 @@
 
 class mpu6000
 {
-      
   public:
 
     mpu6000(int csChannel, int speed);

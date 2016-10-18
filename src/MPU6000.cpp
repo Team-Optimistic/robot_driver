@@ -228,12 +228,17 @@ float mpu6000::read_acc(int axis){
         case 2:
         responseH=write(MPUREG_ACCEL_ZOUT_H | READ_FLAG);
         break;
+	default:
+	responseH=write(MPUREG_ACCEL_XOUT_H | READ_FLAG);
+	break;
     }
     responseH=write(0x00);
     responseL=write(0x00);
-    bit_data=((int)responseH<<8)|responseL;
+    //bit_data=((int)responseH<<8)|responseL;
+    bit_data = responseH;
+    bit_data = (bit_data << 8) | responseL;
     data=(float)bit_data;
-    data=data/acc_divider;
+    data=(float)data/(float)acc_divider;
     deselect();
     return data;
 }
@@ -261,12 +266,17 @@ float mpu6000::read_rot(int axis){
         case 2:
         responseH=write(MPUREG_GYRO_ZOUT_H | READ_FLAG);
         break;
+	default:
+	responseH=write(MPUREG_GYRO_XOUT_H | READ_FLAG);
+	break;
     }
     responseH=write(0x00);
     responseL=write(0x00);
-    bit_data=((int)responseH<<8)|responseL;
+    //bit_data=((int)responseH<<8)|responseL;
+    bit_data = responseH;
+    bit_data = (bit_data << 8) | responseL;
     data=(float)bit_data;
-    data=data/gyro_divider;
+    data=(float)data/(float)gyro_divider;
     deselect();
     return data;
 }
