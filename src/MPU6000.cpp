@@ -284,9 +284,10 @@ float mpu6000::read_temp(){
     responseH=write(MPUREG_TEMP_OUT_H | READ_FLAG);
     responseH=write(0x00);
     responseL=write(0x00);
-    bit_data=((int)responseH<<8)|responseL;
+    bit_data = responseH;
+    bit_data=(bit_data<<8)|responseL;
     data=(float)bit_data;
-    data=(data/340)+36.53;
+    data=(data/340.0)+36.53;
     deselect();
     return data;
 }
