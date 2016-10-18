@@ -50,33 +50,13 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
 }
 
 /**
- * Returns the length of a message, given its type
- * @param  type Type of message
- * @return      Length of message
- */
-inline const uint8_t getMsgLengthForType(const uint8_t type) const
-{
-  switch (type)
-  {
-    case std_msg_type:
-      return std_msg_length;
-
-    case spc_msg_type:
-      return spc_msg_type;
-
-    default:
-      return 0;
-  }
-}
-
-/**
  * Polls UART and sets its inputs to the latest data
  * @param odom Odometry data
  * @param imu  IMU data
  */
 void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
-  boost::array<uint8_t, 3> flagHolders; //0 = msg, 1 = type, 2 = count
+/*  boost::array<uint8_t, 3> flagHolders; //0 = msg, 1 = type, 2 = count
 
   // Load start byte
   do
@@ -124,7 +104,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   // 	pos->pose.orientation.y =  0;
   // 	pos->pose.orientation.z =  0;
   // 	pos->pose.orientation.w =  sin(radians/2);
-}
+*/}
 
 /**
  * Callback function for sending message to cortex
