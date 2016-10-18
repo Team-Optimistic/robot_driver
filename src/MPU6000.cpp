@@ -26,15 +26,44 @@ returns 1 if an error occurred
 -----------------------------------------------------------------------------------------------*/
 unsigned char mpu6000::write(unsigned char dataIn){
     unsigned char buff[1] = {dataIn}; 
-    //std::cout << (int) buff[0] << "     " ;
+    //std::cout <<"sent  " <<std::hex<< (int) buff[0] << "     " ;
     wiringPiSPIDataRW (channel, buff,1);
-    //std::cout <<(int) buff[0] << std::endl;
+    //std::cout <<"recieved  " <<std::hex<<(int) buff[0] << std::endl;
     return buff[0];
+}
+
+unsigned char mpu6000::writeReg(unsigned char reg, unsigned char value)
+{
+	unsigned char buf[2] = {reg, value};
+	wiringPiSPIDataRW(channel, buf,2);
+	return buf[0];
+}
+
+void mpu6000::wakeup(){
+	select();
+	unsigned char response;
+	write(MPUREG_PWR_MGMT_1|READ_FLAG);
+	response = write(0x00);
+	std::cout <<"wakeup   "<< std::hex <<(int)response <<std::endl;
+	for (int i=0; i<8; i++)
+	{
+		usleep(500000);
+	}
+	//write(MPUREG_PWR_MGMT_1);
+	//write(0x00);
+	writeReg(MPUREG_PWR_MGMT_1, 0x00);
+	for (int i=0; i<8; i++)
+	{
+		usleep(500000);
+	}
+
+	write(MPUREG_PWR_MGMT_1|READ_FLAG);
+	response = write(0x00);
+	deselect();
+	std::cout <<"new value "<< std::hex <<(int)response <<std::endl;
 
 
 }
-
-
 bool mpu6000::init(int sample_rate_div,int low_pass_filter){
     unsigned int response;
     //FIRST OF ALL DISABLE I2C
@@ -44,8 +73,8 @@ bool mpu6000::init(int sample_rate_div,int low_pass_filter){
     //deselect();
     //RESET CHIP
     select();
-    response=write(MPUREG_PWR_MGMT_1);
-    response=write(BIT_H_RESET); 
+    response=write(MPUREG_PWR_MGMT_1);    
+	response=write(BIT_H_RESET); 
     deselect();
     usleep(150000);
     //WAKE UP AND SET GYROZ CLOCK
@@ -117,7 +146,7 @@ unsigned int mpu6000::set_acc_scale(int scale){
 	acc_divider=2048;
 	break;
     }
-    //wait(0.01);
+	usleep(10000);
     select();
     temp_scale=write(MPUREG_ACCEL_CONFIG|READ_FLAG);
     temp_scale=write(0x00);
@@ -176,7 +205,7 @@ unsigned int mpu6000::set_gyro_scale(int scale){
 	gyro_divider=16.4;
 	break;
     }
-    //wait(0.01);
+	usleep(10000);
     select();
     temp_scale=write(MPUREG_GYRO_CONFIG|READ_FLAG);
     temp_scale=write(0x00);

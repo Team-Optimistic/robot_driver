@@ -18,8 +18,10 @@ class mpu6000
     void deselect();
     unsigned int whoami();
     unsigned char write(unsigned char dataIn);
+    unsigned char writeReg(unsigned char reg, unsigned char value);
     float acc_divider;
     float gyro_divider;
+	void wakeup();
     
   private:
    int channel;

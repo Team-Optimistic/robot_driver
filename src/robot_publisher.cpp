@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 
   try
   {
-    mpu6000 imu(0,5000000);
+    mpu6000 imu(0,500000);
     std::cout <<"supposedly inited" <<std::endl;
     std::cout <<imu.init(1,BITS_DLPF_CFG_5HZ) <<std::endl;
     usleep(100000);
@@ -87,12 +87,15 @@ int main(int argc, char **argv)
                    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
     ros::Subscriber ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::publish_callback, &robot);
 	*/
+	imu.wakeup();
     while (ros::ok())
     {
       std::cout << "whoami: " << imu.whoami() << std::endl;
+	//imu.wakeup();
       std::cout << "Temp: " << imu.read_temp() << ", R0: " << imu.read_rot(0) << ", R1: " << imu.read_rot(1) << ", R2: " << imu.read_rot(2)
 		<< ", A0: " << imu.read_acc(0) << ", A1: "  << imu.read_acc(1) << ", A2: " << imu.read_acc(2) << std::endl;
-      usleep(600000);
+      usleep(500000);
+	usleep(500000);
       /*nav_msgs::Odometry odomOut;
       sensor_msgs::Imu imuOut;
 
@@ -104,7 +107,7 @@ int main(int argc, char **argv)
       imuOut.header.stamp = ros::Time::now();
 
       robot.poll(&odomOut, &imuOut);
-
+x
       geometry_msgs::Point xyz = odomOut.pose.pose.position;
       geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
       transform.setRotation( tf::Quaternion(direction.x, direction.y, direction.z, direction.w) );
