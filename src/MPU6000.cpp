@@ -261,19 +261,27 @@ float mpu6000::read_acc(int axis){
     switch (axis){
         case 0:
         responseH=write(MPUREG_ACCEL_XOUT_H | READ_FLAG);
-	responseL=write(MPUREG_ACCEL_XOUT_L | READ_FLAG);
+		responseH=write(0x00);
+		responseL=write(MPUREG_ACCEL_XOUT_L | READ_FLAG);
+		responseL=write(0x00);	
         break;
         case 1:
         responseH=write(MPUREG_ACCEL_YOUT_H | READ_FLAG);
-	responseL=write(MPUREG_ACCEL_YOUT_L | READ_FLAG);
-        break;
+		responseH=write(0x00);
+		responseL=write(MPUREG_ACCEL_YOUT_L | READ_FLAG);
+		responseL=write(0x00);        
+		break;
         case 2:
         responseH=write(MPUREG_ACCEL_ZOUT_H | READ_FLAG);
-	responseL=write(MPUREG_ACCEL_ZOUT_L | READ_FLAG);
-        break;
+		responseH=write(0x00);	
+		responseL=write(MPUREG_ACCEL_ZOUT_L | READ_FLAG);
+		responseL=write(0x00);        
+break;
 	default:
 	responseH=write(MPUREG_ACCEL_XOUT_H | READ_FLAG);
+	responseH=write(0x00);	
 	responseL=write(MPUREG_ACCEL_XOUT_L | READ_FLAG);
+	responseL=write(0x00);	
 	break;
     }
 //    responseH=write(0x00);
@@ -302,20 +310,31 @@ float mpu6000::read_rot(int axis){
     select();
     switch (axis){
         case 0:
-        responseH=write(MPUREG_GYRO_XOUT_H | READ_FLAG);
-        break;
+	        responseH=write(MPUREG_GYRO_XOUT_H | READ_FLAG);
+			responseH=write(0x00);
+	        responseL=write(MPUREG_GYRO_XOUT_L | READ_FLAG);
+			responseL=write(0x00);
+	        break;
         case 1:
-        responseH=write(MPUREG_GYRO_YOUT_H | READ_FLAG);
-        break;
-        case 2:
-        responseH=write(MPUREG_GYRO_ZOUT_H | READ_FLAG);
-        break;
-	default:
-	responseH=write(MPUREG_GYRO_XOUT_H | READ_FLAG);
-	break;
+			responseH=write(MPUREG_GYRO_YOUT_H | READ_FLAG);
+			responseH=write(0x00);
+	        responseL=write(MPUREG_GYRO_YOUT_L | READ_FLAG);
+			responseL=write(0x00);
+	        break;
+		case 2:
+			responseH=write(MPUREG_GYRO_ZOUT_H | READ_FLAG);
+			responseH=write(0x00);
+	        responseL=write(MPUREG_GYRO_ZOUT_L | READ_FLAG);
+			responseL=write(0x00);
+	        break;
+		default:
+			responseH=write(MPUREG_GYRO_XOUT_H | READ_FLAG);
+			responseH=write(0x00);
+	        responseL=write(MPUREG_GYRO_XOUT_L | READ_FLAG);
+			responseL=write(0x00);
+			break;
     }
-    responseH=write(0x00);
-    responseL=write(0x00);
+   
     //bit_data=((int)responseH<<8)|responseL;
     bit_data = responseH;
     bit_data = (bit_data << 8) | responseL;
@@ -332,14 +351,17 @@ returns the value in °C
 -----------------------------------------------------------------------------------------------*/
 float mpu6000::read_temp(){
     unsigned char responseH,responseL;
-    int bit_data;
+    int16_t bit_data;
     float data;
     select();
     responseH=write(MPUREG_TEMP_OUT_H | READ_FLAG);
     responseH=write(0x00);
+	responseL=write(MPUREG_TEMP_OUT_L | READ_FLAG);
     responseL=write(0x00);
     bit_data = responseH;
     bit_data=(bit_data<<8)|responseL;
+	
+
     data=(float)bit_data;
     data=(data/340.0)+36.53;
     deselect();

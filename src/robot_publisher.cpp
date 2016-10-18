@@ -72,7 +72,6 @@ int main(int argc, char **argv)
     usleep(100000);
 	std::cout << "who am i = " <<imu.whoami()<<std::endl;
 	usleep(100000);
-	imu.wakeup();
 	std::cout << "gyro scale = " <<std::dec<<imu.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
 	usleep(500000);//half second wait. Function breaks with 1 million
 	usleep(500000);    
