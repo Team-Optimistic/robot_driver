@@ -90,7 +90,8 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
       imu.whoami();
-      std::cout <<imu.read_temp() << std::endl;
+      std::cout << "Temp: " << imu.read_temp() << ", R0: " << imu.read_rot(0) << ", R1: " << imu.read_rot(1) << ", R2: " << imu.read_rot(2)
+		<< ", A0:" << imu.read_acc(0) << ", A1:" << imu.read_acc(1) << ", A2:" << imu.read_acc(2) << std::endl;
       usleep(600000);
       /*nav_msgs::Odometry odomOut;
       sensor_msgs::Imu imuOut;
