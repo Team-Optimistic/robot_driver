@@ -91,7 +91,7 @@ bool mpu6000::init(int sample_rate_div,int low_pass_filter){
 //    response=write(BIT_I2C_IF_DIS);
     //deselect();
     //WHO AM I?
-    select();
+	wakeup();
     response=write(MPUREG_WHOAMI|READ_FLAG);
     response=write(0x00);
     deselect();
@@ -100,18 +100,15 @@ bool mpu6000::init(int sample_rate_div,int low_pass_filter){
     else{std::cout<<"whoami fine"<<std::endl;}
     //SET SAMPLE RATE
     select();
-    response=write(MPUREG_SMPLRT_DIV);
-    response=write(sample_rate_div); 
+    writeReg(MPUREG_SMPLRT_DIV,sample_rate_div); 
     deselect();
     // FS & DLPF
     select();
-    response=write(MPUREG_CONFIG);
-    response=write(low_pass_filter);
+    writeReg(MPUREG_CONFIG,low_pass_filter);
     deselect();
     //DISABLE INTERRUPTS
     select();
-    response=write(MPUREG_INT_ENABLE);
-    response=write(0x00);
+    writeReg(MPUREG_INT_ENABLE,0x00);
     deselect();
     return 0;
 }
@@ -129,8 +126,7 @@ returns the range set (2,4,8 or 16)
 unsigned int mpu6000::set_acc_scale(int scale){
     unsigned int temp_scale;
     select();
-    write(MPUREG_ACCEL_CONFIG);
-    write(scale);  
+    writeReg(MPUREG_ACCEL_CONFIG,scale);  
     deselect();    
     switch (scale){
         case BITS_FS_2G:
@@ -188,8 +184,7 @@ returns the range set (250,500,1000 or 2000)
 unsigned int mpu6000::set_gyro_scale(int scale){
     unsigned int temp_scale;
     select();
-    write(MPUREG_GYRO_CONFIG);
-    write(scale);  
+    writeReg(MPUREG_GYRO_CONFIG,scale);  
     deselect();    
     switch (scale){
         case BITS_FS_250DPS:
@@ -260,7 +255,7 @@ returns the value in Gs
 -----------------------------------------------------------------------------------------------*/
 float mpu6000::read_acc(int axis){
     unsigned char responseH,responseL;
-    int bit_data;
+    int16_t bit_data;
     float data;
     select();
     switch (axis){
@@ -287,7 +282,7 @@ float mpu6000::read_acc(int axis){
     bit_data = responseH;
     bit_data = (bit_data << 8) | responseL;
     data=(float)bit_data;
-    //data=(float)data/(float)acc_divider;
+    data=(float)data/(float)acc_divider;
     deselect();
     return data;
 }
@@ -302,7 +297,7 @@ returns the value in Degrees per second
 -----------------------------------------------------------------------------------------------*/
 float mpu6000::read_rot(int axis){
     unsigned char responseH,responseL;
-    int bit_data;
+    int16_t bit_data;
     float data;
     select();
     switch (axis){
@@ -325,7 +320,7 @@ float mpu6000::read_rot(int axis){
     bit_data = responseH;
     bit_data = (bit_data << 8) | responseL;
     data=(float)bit_data;
-    //data=(float)data/(float)gyro_divider;
+    data=(float)data/(float)gyro_divider;
     deselect();
     return data;
 }
@@ -346,7 +341,7 @@ float mpu6000::read_temp(){
     bit_data = responseH;
     bit_data=(bit_data<<8)|responseL;
     data=(float)bit_data;
-    //data=(data/340.0)+36.53;
+    data=(data/340.0)+36.53;
     deselect();
     return data;
 }

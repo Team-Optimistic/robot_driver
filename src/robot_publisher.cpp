@@ -71,11 +71,12 @@ int main(int argc, char **argv)
     std::cout <<imu.init(1,BITS_DLPF_CFG_5HZ) <<std::endl;
     usleep(100000);
 	std::cout << "who am i = " <<imu.whoami()<<std::endl;
-	usleep(100000);    
-	std::cout << "gyro scale = " <<imu.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
+	usleep(100000);
+	imu.wakeup();
+	std::cout << "gyro scale = " <<std::dec<<imu.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
 	usleep(500000);//half second wait. Function breaks with 1 million
 	usleep(500000);    
-	std::cout << "accel scale = " <<imu.set_acc_scale(BITS_FS_16G) << std::endl;
+	std::cout << "accel scale = " <<std::dec<<imu.set_acc_scale(BITS_FS_16G) << std::endl;
     usleep(100000);
 	usleep(500000);
 	usleep(500000);
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
                    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
     ros::Subscriber ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::publish_callback, &robot);
 	*/
-	imu.wakeup();
+	//imu.wakeup();
     while (ros::ok())
     {
       std::cout << "whoami: " << imu.whoami() << std::endl;
