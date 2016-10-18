@@ -51,7 +51,7 @@ void mpu6000::wakeup(){
 	}
 	//write(MPUREG_PWR_MGMT_1);
 	//write(0x00);
-	writeReg(MPUREG_PWR_MGMT_1, 0x00);
+	writeReg(MPUREG_PWR_MGMT_1, MPU_CLK_SEL_PLLGYROZ);
 	for (int i=0; i<8; i++)
 	{
 		usleep(500000);
@@ -68,24 +68,27 @@ bool mpu6000::init(int sample_rate_div,int low_pass_filter){
     unsigned int response;
     //FIRST OF ALL DISABLE I2C
     //select();
-    response=write(MPUREG_USER_CTRL);
-    response=write(BIT_I2C_IF_DIS);
+    writeReg(MPUREG_USER_CTRL, BIT_I2C_IF_DIS);
+//    response=write(MPUREG_USER_CTRL);
+//    response=write(BIT_I2C_IF_DIS);
     //deselect();
     //RESET CHIP
     select();
-    response=write(MPUREG_PWR_MGMT_1);    
-	response=write(BIT_H_RESET); 
+    writeReg(MPUREG_PWR_MGMT_1,BIT_H_RESET);
+//    response=write(MPUREG_PWR_MGMT_1);    
+//	response=write(BIT_H_RESET); 
     deselect();
     usleep(150000);
-    //WAKE UP AND SET GYROZ CLOCK
-    select();
-    response=write(MPUREG_PWR_MGMT_1);
-    response=write(MPU_CLK_SEL_PLLGYROZ); 
-    deselect();
+    //WAKE UP AND SET GYROZ CLOCK  moved to wakeup call
+    //select();
+    //response=write(MPUREG_PWR_MGMT_1);
+    //response=write(MPU_CLK_SEL_PLLGYROZ); 
+    //deselect();
     //DISABLE I2C
     //select();
-    response=write(MPUREG_USER_CTRL);
-    response=write(BIT_I2C_IF_DIS);
+    writeReg(MPUREG_USER_CTRL, BIT_I2C_IF_DIS);
+//    response=write(MPUREG_USER_CTRL);
+//    response=write(BIT_I2C_IF_DIS);
     //deselect();
     //WHO AM I?
     select();
