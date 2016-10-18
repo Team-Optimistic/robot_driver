@@ -5,7 +5,7 @@ class mpu6000
 {
   public:
 
-    mpu6000(int csChannel, int speed);
+    mpu6000(int csChannel, long speed);
 
     bool init(int sample_rate_div,int low_pass_filter);
     float read_acc(int axis);

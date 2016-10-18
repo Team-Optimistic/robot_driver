@@ -4,7 +4,7 @@
 #include <unistd.h>
 
  
-mpu6000::mpu6000(int csChannel, int speed) {
+mpu6000::mpu6000(int csChannel, long speed) {
     channel=csChannel;
     wiringPiSPISetup(channel,speed) ;
 
@@ -38,10 +38,10 @@ unsigned char mpu6000::write(unsigned char dataIn){
 bool mpu6000::init(int sample_rate_div,int low_pass_filter){
     unsigned int response;
     //FIRST OF ALL DISABLE I2C
-    select();
+    //select();
     response=write(MPUREG_USER_CTRL);
     response=write(BIT_I2C_IF_DIS);
-    deselect();
+    //deselect();
     //RESET CHIP
     select();
     response=write(MPUREG_PWR_MGMT_1);
@@ -54,17 +54,18 @@ bool mpu6000::init(int sample_rate_div,int low_pass_filter){
     response=write(MPU_CLK_SEL_PLLGYROZ); 
     deselect();
     //DISABLE I2C
-    select();
+    //select();
     response=write(MPUREG_USER_CTRL);
     response=write(BIT_I2C_IF_DIS);
-    deselect();
+    //deselect();
     //WHO AM I?
     select();
     response=write(MPUREG_WHOAMI|READ_FLAG);
     response=write(0x00);
     deselect();
-    std::cout <<response <<std::endl;
+    std::cout<<"whoami:"<<response<<std::endl;
     if(response<100){return 0;}//COULDN'T RECEIVE WHOAMI
+    else{std::cout<<"whoami fine"<<std::endl;}
     //SET SAMPLE RATE
     select();
     response=write(MPUREG_SMPLRT_DIV);
@@ -111,12 +112,15 @@ unsigned int mpu6000::set_acc_scale(int scale){
         break;
         case BITS_FS_16G:
             acc_divider=2048;
-        break;   
+        break;
+	default:
+	acc_divider=2048;
+	break;
     }
     //wait(0.01);
     select();
     temp_scale=write(MPUREG_ACCEL_CONFIG|READ_FLAG);
-    temp_scale=write(0x00);  
+    temp_scale=write(0x00);
     deselect();
     switch (temp_scale){
         case BITS_FS_2G:
@@ -130,7 +134,10 @@ unsigned int mpu6000::set_acc_scale(int scale){
         break;
         case BITS_FS_16G:
             temp_scale=16;
-        break;   
+        break;
+	default:
+	temp_scale=16;
+	break;
     }
     return temp_scale;
 }
@@ -164,12 +171,15 @@ unsigned int mpu6000::set_gyro_scale(int scale){
         break;
         case BITS_FS_2000DPS:
             gyro_divider=16.4;
-        break;   
+        break;
+	default:
+	gyro_divider=16.4;
+	break;
     }
     //wait(0.01);
     select();
     temp_scale=write(MPUREG_GYRO_CONFIG|READ_FLAG);
-    temp_scale=write(0x00);  
+    temp_scale=write(0x00);
     deselect();
     switch (temp_scale){
         case BITS_FS_250DPS:
@@ -183,12 +193,15 @@ unsigned int mpu6000::set_gyro_scale(int scale){
         break;
         case BITS_FS_2000DPS:
             temp_scale=2000;
-        break;   
+        break;
+	default:
+	temp_scale=2000;
+	break;
     }
     return temp_scale;
 }
- 
- 
+
+
 /*-----------------------------------------------------------------------------------------------
                                 WHO AM I?
 usage: call this function to know if SPI is working correctly. It checks the I2C address of the
@@ -238,7 +251,7 @@ float mpu6000::read_acc(int axis){
     bit_data = responseH;
     bit_data = (bit_data << 8) | responseL;
     data=(float)bit_data;
-    data=(float)data/(float)acc_divider;
+    //data=(float)data/(float)acc_divider;
     deselect();
     return data;
 }
@@ -276,7 +289,7 @@ float mpu6000::read_rot(int axis){
     bit_data = responseH;
     bit_data = (bit_data << 8) | responseL;
     data=(float)bit_data;
-    data=(float)data/(float)gyro_divider;
+    //data=(float)data/(float)gyro_divider;
     deselect();
     return data;
 }
@@ -297,7 +310,7 @@ float mpu6000::read_temp(){
     bit_data = responseH;
     bit_data=(bit_data<<8)|responseL;
     data=(float)bit_data;
-    data=(data/340.0)+36.53;
+    //data=(data/340.0)+36.53;
     deselect();
     return data;
 }
@@ -351,6 +364,13 @@ int mpu6000::calib_acc(int axis){
             responseL=write(0x00);
             calib_data=((responseH&11100000)>>3)|((responseL&00000011));
         break;
+	default:
+	responseH=write(0x00);
+	responseL=write(0x00);
+	responseL=write(0x00);
+	responseL=write(0x00);
+	calib_data=((responseH&11100000)>>3)|((responseL&00110000)>>4);
+	break;
     }
     deselect();
     //wait(0.01);

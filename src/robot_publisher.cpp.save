@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 
   try
   {
-    mpu6000 imu(0,5000000);
+    mpu6000 imu(0,16000000);
     std::cout <<"supposedly inited" <<std::endl;
     std::cout <<imu.init(1,BITS_DLPF_CFG_5HZ) <<std::endl;
     usleep(100000);
@@ -89,9 +89,9 @@ int main(int argc, char **argv)
 	*/
     while (ros::ok())
     {
-      std::cout << "whoami: " << imu.whoami() << std::endl;
+      imu.whoami();
       std::cout << "Temp: " << imu.read_temp() << ", R0: " << imu.read_rot(0) << ", R1: " << imu.read_rot(1) << ", R2: " << imu.read_rot(2)
-		<< ", A0: " << imu.read_acc(0) << ", A1: "  << imu.read_acc(1) << ", A2: " << imu.read_acc(2) << std::endl;
+		<< ", A0:" << imu.read_acc(0) << ", A1:" << imu.read_acc(1) << ", A2:" << imu.read_acc(2) << std::endl;
       usleep(600000);
       /*nav_msgs::Odometry odomOut;
       sensor_msgs::Imu imuOut;
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
       transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
 
-      odomPub.publish(odomOut);*/
+      odomPub.publish(odomOut);
 
 
     }
