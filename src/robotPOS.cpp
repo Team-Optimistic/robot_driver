@@ -131,7 +131,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 /**
  * Callback function for sending new object position to cortex
  */
-void mpc_callback(const geometry_msgs::Point32::ConstPtr& in)
+void robotPOS::mpc_callback(const geometry_msgs::Point32::ConstPtr& in)
 {
   const int msgLength = 3;
   boost::array<uint8_t, msgLength> out = {in->x, in->y, in->z};
