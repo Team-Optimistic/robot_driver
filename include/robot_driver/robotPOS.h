@@ -103,31 +103,16 @@ class robotPOS
     //Starting flag for sending a message to the cortex
     const boost::array<uint8_t, 1> startFlag  = {{0xFA}};
 
-    inline const uint8_t getMsgLengthForType(const uint8_t type)
-    {
-      switch (type)
-      {
-        case std_msg_type:
-          return std_msg_length;
+    /**
+     * Returns the length of a given type of message
+     * @param  type Type of message
+     * @return      Length of message
+     */
+    inline const uint8_t getMsgLengthForType(const uint8_t type);
 
-        case spc_msg_type:
-          return spc_msg_length;
-
-        default:
-          return 0;
-      }
-    }
-
-    inline void sendMsgHeader(const uint8_t type)
-    {
-      //Send start byte
-      boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
-
-      //Send type byte
-      boost::asio::write(serial_, boost::asio::buffer(&msgTypes[type - 1], 1));
-
-      //Send count
-      msgCounts[type - 1] = msgCounts[type - 1] + 1;
-      boost::asio::write(serial_, boost::asio::buffer(&msgCounts[type - 1], 1));
-    }
+    /**
+     * Sends message header over UART
+     * @param type Type of message
+     */
+    void sendMsgHeader(const uint8_t type);
 };
