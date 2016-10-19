@@ -40,11 +40,10 @@
 float x = 0;
 
 
-robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io)
-    : port_(port)
-    , baud_rate_(baud_rate)
-    , shutting_down_(false)
-    , serial_(io, port_)
+robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io):
+  port_(port)
+  ,baud_rate_(baud_rate)
+  ,serial_(io, port_)
 {
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
 }
