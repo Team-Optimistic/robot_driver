@@ -4,33 +4,33 @@
 class mpu6000
 {
   public:
-
     mpu6000(int csChannel, long speed);
 
     bool init(int sample_rate_div,int low_pass_filter);
+    void wakeup();
+
     float read_acc(int axis);
     float read_rot(int axis);
+    float read_temp();
+
     unsigned int set_gyro_scale(int scale);
     unsigned int set_acc_scale(int scale);
+
     int calib_acc(int axis);
-    float read_temp();
-    void select();
-    void deselect();
+
     unsigned int whoami();
+
     unsigned char write(unsigned char dataIn);
     unsigned char writeReg(unsigned char reg, unsigned char value);
+
     float acc_divider;
     float gyro_divider;
-	void wakeup();
-    
   private:
    int channel;
 };
- 
+
 #endif
- 
- 
- 
+
 // MPU6000 registers
 #define MPUREG_XG_OFFS_TC 0x00
 #define MPUREG_YG_OFFS_TC 0x01
@@ -87,7 +87,7 @@ class mpu6000
 #define MPUREG_FIFO_COUNTL 0x73
 #define MPUREG_FIFO_R_W 0x74
 #define MPUREG_WHOAMI 0x75
- 
+
 // Configuration bits MPU6000
 #define BIT_SLEEP 0x40
 #define BIT_H_RESET 0x80
@@ -116,10 +116,5 @@ class mpu6000
 #define BIT_INT_ANYRD_2CLEAR        0x10
 #define BIT_RAW_RDY_EN              0x01
 #define BIT_I2C_IF_DIS              0x10
- 
+
 #define READ_FLAG   0x80
- 
- 
-
-
-
