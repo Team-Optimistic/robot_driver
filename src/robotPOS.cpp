@@ -71,14 +71,14 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   boost::asio::read(serial_, boost::asio::buffer(&msgData[0], getMsgLengthForType(flagHolders[2])));
 
   // Pose
-  odom->pose.pose.position.x = x;
+  odom->pose.pose.position.x = 0;
   odom->pose.pose.position.y = 0;
   odom->pose.pose.position.z = 0;
 
-  odom->pose.pose.orientation.x = cos(radians / 2);
+  odom->pose.pose.orientation.x = 0;
   odom->pose.pose.orientation.y = 0;
   odom->pose.pose.orientation.z = 0;
-  odom->pose.pose.orientation.w = sin(radians / 2);
+  odom->pose.pose.orientation.w = 0;
 
   odom->pose.covariance = ODOM_POSE_COV_MAT;
 
@@ -133,7 +133,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 void robotPOS::mpc_callback(const geometry_msgs::Point32::ConstPtr& in)
 {
   const int msgLength = 3;
-  boost::array<uint8_t, msgLength> out = {in->x, in->y, in->z};
+  boost::array<uint8_t, msgLength> out = {{(uint8_t)in->x, (uint8_t)in->y, (uint8_t)in->z}};
 
   //Send header
   sendMsgHeader(mpc_msg_type);
