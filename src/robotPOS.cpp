@@ -37,9 +37,6 @@
 
 #include "robot_driver/robotPOS.h"
 
-float x = 0;
-
-
 robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io):
   port_(port)
   ,baud_rate_(baud_rate)

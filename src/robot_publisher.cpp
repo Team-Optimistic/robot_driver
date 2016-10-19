@@ -122,12 +122,12 @@ int main(int argc, char **argv)
 
       odomPub.publish(odomOut);
     }
-    
+
     return 0;
   }
   catch (boost::system::system_error ex)
   {
-    ROS_ERROR("Error instantiating robot object. Are you sure you have the correct port and baud rate? Error was %s", ex.what());
+    ROS_ERROR("Error instantiating robot object. Are you sure you have the correct port and baud rate? Error was: %s", ex.what());
     return -1;
   }
 }
