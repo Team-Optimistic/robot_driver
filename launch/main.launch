@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="robot_driver" type="robot_publisher" name="robot_publisher" clear_params="true">
+  <node pkg="robot_driver" type="robot_driver" name="robot_driver" clear_params="true">
     <param name="port" value="/dev/ttyS0" />
   </node>
 
@@ -10,5 +10,8 @@
   <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true">
     <param name="port" value="/dev/ttyUSB0" />
     <param name="firmware_version" value="2" />
+  </node>
+
+  <node pkg="motion_path_creator" type="motion_path_creator" name="motion_path_creator" clear_params="true">
   </node>
 </launch>

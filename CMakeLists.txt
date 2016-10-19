@@ -73,19 +73,19 @@ include_directories(include
 
 ## Declare a cpp executable
 # add_executable(xv_11_laser_driver_node src/xv_11_laser_driver_node.cpp)
-add_executable(robot_publisher
+add_executable(robot_driver
 	src/robot_publisher.cpp
 	src/robotPOS.cpp
 	src/MPU6000.cpp
 )
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(robot_publisher  robot_driver_generate_messages_cpp)
+add_dependencies(robot_driver  robot_driver_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(robot_publisher
+target_link_libraries(robot_driver
   ${catkin_LIBRARIES}
-  ${WIRINGPI_LIBRARIES}	
+  ${WIRINGPI_LIBRARIES}
 )
 
 #############
@@ -103,7 +103,7 @@ target_link_libraries(robot_publisher
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS robot_publisher
+install(TARGETS robot_driver
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
