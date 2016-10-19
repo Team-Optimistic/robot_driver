@@ -67,8 +67,8 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[1], 2));
 
   // Load msg
-  boost::array<uint8_t, getMsgLengthForType(flagHolders[2])> msgData;
-  boost::asio::read(serial_, boost::asio::buffer(&msgData[0], getMsgLengthForType(flagHolders[2])));
+  std::vector<uint8_t> msgData;
+  boost::asio::read(serial_, boost::asio::buffer(msgData));
 
   // Pose
   odom->pose.pose.position.x = 0;
@@ -147,7 +147,7 @@ void robotPOS::mpc_callback(const geometry_msgs::Point32::ConstPtr& in)
  * @param  type Type of message
  * @return      Length of message
  */
-inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type)
+inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
 {
   switch (type)
   {
@@ -156,6 +156,9 @@ inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type)
 
     case spc_msg_type:
       return spc_msg_length;
+
+    case mpc_msg_type:
+      return mpc_msg_length;
 
     default:
       return 0;
