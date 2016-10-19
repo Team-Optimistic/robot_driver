@@ -56,7 +56,7 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
  */
 void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
-/*  boost::array<uint8_t, 3> flagHolders; //0 = msg, 1 = type, 2 = count
+  boost::array<uint8_t, 3> flagHolders; //0 = msg, 1 = type, 2 = count
 
   // Load start byte
   do
@@ -68,8 +68,8 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[1], 2));
 
   // Load msg
-  boost::array<uint8_t, flagHolders[2]> msgData;
-  boost::asio::read(serial_, boost::asio::buffer(&msgData[0], flagHolders[2]));
+  boost::array<uint8_t, getMsgLengthForType(flagHolders[2])> msgData;
+  boost::asio::read(serial_, boost::asio::buffer(&msgData[0], getMsgLengthForType(flagHolders[2])));
 
   // Pose
   odom->pose.pose.position.x = x;
@@ -104,15 +104,15 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   // 	pos->pose.orientation.y =  0;
   // 	pos->pose.orientation.z =  0;
   // 	pos->pose.orientation.w =  sin(radians/2);
-*/}
+}
 
 /**
- * Callback function for sending message to cortex
- * @param in Odometry message to send
+ * Callback function for sending ekf position estimate to cortex
  */
-void robotPOS::publish_callback(const nav_msgs::Odometry::ConstPtr& in)
+void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 {
-  boost::array<uint8_t, 7> out;
+  const int msgLength = 4;
+  boost::array<uint8_t, msgLength> out;
 
   out[0] = outMsgCount++;
   out[1] = in->pose.pose.position.x;
@@ -120,13 +120,35 @@ void robotPOS::publish_callback(const nav_msgs::Odometry::ConstPtr& in)
   const geometry_msgs::Quaternion quat = in->pose.pose.orientation;
   out[3] = atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
                 ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
-  out[4] = 0;
-  out[5] = 0;
-  out[6] = 0;
 
   //Send start byte
   boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
 
+  //Send type byte
+  boost::asio::write(serial_, boost::asio::buffer(&msgTypes[0], 1));
+
+  //Send count
+  msgCounts[0] = msgCounts[0] + 1;
+  boost::asio::write(serial_, boost::asio::buffer(&msgCounts[0], 1));
+
   //Send data
-  boost::asio::write(serial_,  boost::asio::buffer(&out[0], 7));
+  boost::asio::write(serial_,  boost::asio::buffer(&out[0], msgLength));
+}
+
+void mpc_callback(const geometry_msgs::Point32::ConstPtr& in)
+{
+  const int msgLength = 3;
+  boost::array<uint8_t, msgLength> out = {in->x, in->y, in->z};
+
+  //Send start byte
+  boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
+
+  //Send type byte
+  boost::asio::write(serial_, boost::asio::buffer(&msgTypes[3], 1));
+
+  //Send count
+  boost::asio::write(serial_, boost::asio::buffer(&msgCounts[3], 1));
+
+  //Send data
+  boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
 }

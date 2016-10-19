@@ -66,37 +66,43 @@ int main(int argc, char **argv)
 
   try
   {
-    mpu6000 imu(0,500000);
-    std::cout <<"supposedly inited" <<std::endl;
-    std::cout <<imu.init(1,BITS_DLPF_CFG_5HZ) <<std::endl;
+    mpu6000 imu(0, 500000);
+    std::cout << "supposedly inited" << std::endl;
+    std::cout << imu.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
+
     usleep(100000);
-	std::cout << "who am i = " <<imu.whoami()<<std::endl;
-	usleep(100000);
-	std::cout << "gyro scale = " <<std::dec<<imu.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
-	usleep(500000);//half second wait. Function breaks with 1 million
-	usleep(500000);    
-	std::cout << "accel scale = " <<std::dec<<imu.set_acc_scale(BITS_FS_16G) << std::endl;
+  	usleep(100000);
+
+  	std::cout << "gyro scale = " << std::dec<< imu.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
+
+    //half second wait. Function breaks with 1 million
+  	usleep(500000);
+  	usleep(500000);
+
+  	std::cout << "accel scale = " << std::dec<< imu.set_acc_scale(BITS_FS_16G) << std::endl;
+
     usleep(100000);
-	usleep(500000);
-	usleep(500000);
-	usleep(500000);
-	usleep(500000);
-	usleep(500000);
-    /*robotPOS robot(port, baud_rate, io);
+  	usleep(500000);
+  	usleep(500000);
+  	usleep(500000);
+  	usleep(500000);
+  	usleep(500000);
+
+    robotPOS robot(port, baud_rate, io);
     ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
                    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
-    ros::Subscriber ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::publish_callback, &robot);
-	*/
-	//imu.wakeup();
+    ros::Subscriber ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, &robot),
+                    mpcSub = n.subscribe<geometry_msgs::Point32>("mpc/nextObject", 1000, &robotPOS::mpc_callback, &robot);
+
     while (ros::ok())
     {
-      std::cout << "whoami: " << imu.whoami() << std::endl;
-	//imu.wakeup();
-      std::cout << "Temp: " << imu.read_temp() << ", R0: " << imu.read_rot(0) << ", R1: " << imu.read_rot(1) << ", R2: " << imu.read_rot(2)
-		<< ", A0: " << imu.read_acc(0) << ", A1: "  << imu.read_acc(1) << ", A2: " << imu.read_acc(2) << std::endl;
-      usleep(500000);
-	usleep(500000);
-      /*nav_msgs::Odometry odomOut;
+      // std::cout << "whoami: " << imu.whoami() << std::endl;
+      // std::cout << "Temp: " << imu.read_temp() << ", R0: " << imu.read_rot(0) << ", R1: " << imu.read_rot(1) << ", R2: " << imu.read_rot(2)
+		  //           << ", A0: " << imu.read_acc(0) << ", A1: "  << imu.read_acc(1) << ", A2: " << imu.read_acc(2) << std::endl;
+      // usleep(500000);
+	    // usleep(500000);
+
+      nav_msgs::Odometry odomOut;
       sensor_msgs::Imu imuOut;
 
       odomOut.header.frame_id = world_frame;
@@ -107,19 +113,17 @@ int main(int argc, char **argv)
       imuOut.header.stamp = ros::Time::now();
 
       robot.poll(&odomOut, &imuOut);
-x
+
       geometry_msgs::Point xyz = odomOut.pose.pose.position;
       geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
       transform.setRotation( tf::Quaternion(direction.x, direction.y, direction.z, direction.w) );
       transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
 
-      odomPub.publish(odomOut);*/
-
-
+      odomPub.publish(odomOut);
     }
 
-    //robot.close();
+    robot.close();
     return 0;
   }
   catch (boost::system::system_error ex)
