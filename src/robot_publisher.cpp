@@ -122,8 +122,7 @@ int main(int argc, char **argv)
 
       odomPub.publish(odomOut);
     }
-
-    robot.close();
+    
     return 0;
   }
   catch (boost::system::system_error ex)
