@@ -121,33 +121,23 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   out[3] = atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
                 ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
 
-  //Send start byte
-  boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
-
-  //Send type byte
-  boost::asio::write(serial_, boost::asio::buffer(&msgTypes[0], 1));
-
-  //Send count
-  msgCounts[0] = msgCounts[0] + 1;
-  boost::asio::write(serial_, boost::asio::buffer(&msgCounts[0], 1));
+  //Send header
+  sendMsgHeader(std_msg_type);
 
   //Send data
   boost::asio::write(serial_,  boost::asio::buffer(&out[0], msgLength));
 }
 
+/**
+ * Callback function for sending new object position to cortex
+ */
 void mpc_callback(const geometry_msgs::Point32::ConstPtr& in)
 {
   const int msgLength = 3;
   boost::array<uint8_t, msgLength> out = {in->x, in->y, in->z};
 
-  //Send start byte
-  boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
-
-  //Send type byte
-  boost::asio::write(serial_, boost::asio::buffer(&msgTypes[3], 1));
-
-  //Send count
-  boost::asio::write(serial_, boost::asio::buffer(&msgCounts[3], 1));
+  //Send header
+  sendMsgHeader(mpc_msg_type);
 
   //Send data
   boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));

@@ -58,6 +58,9 @@ class robotPOS
          */
         void ekf_callback(const nav_msgs::Odometry::ConstPtr& in);
 
+        /**
+         * Callback function for sending new object position to cortex
+         */
         void mpc_callback(const geometry_msgs::Point32::ConstPtr& in);
     private:
         std::string port_; ///< @brief The serial port the driver is attached to
@@ -113,5 +116,18 @@ class robotPOS
             default:
               return 0;
           }
+        }
+
+        inline void sendMsgHeader(const uint8_t type)
+        {
+          //Send start byte
+          boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
+
+          //Send type byte
+          boost::asio::write(serial_, boost::asio::buffer(&msgTypes[type - 1], 1));
+
+          //Send count
+          msgCounts[type - 1] = msgCounts[type - 1] + 1;
+          boost::asio::write(serial_, boost::asio::buffer(&msgCounts[type - 1], 1));
         }
 };
