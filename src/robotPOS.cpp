@@ -38,7 +38,7 @@
 
 #include "robot_driver/robotPOS.h"
 
-robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io):
+robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
   port_(port)
   ,baud_rate_(baud_rate)
   ,serial_(io, port_)
@@ -46,6 +46,31 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
     spcPub = n.advertise<std_msgs::Empty>("robotPOS/spcRequest", 1000);
     mpcPub = n.advertise<geometry_msgs::Point32>("robotPOS/pickedUpObject", 1000);
+
+    // Init imu
+    imu_(csChannel, speed);
+    std::cout << "IMU INIT" << std::endl;
+    std::cout << imu_.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
+
+    usleep(100000);
+  	usleep(100000);
+
+  	std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
+
+    //half second wait. Function breaks with 1 million
+  	usleep(500000);
+  	usleep(500000);
+
+  	std::cout << "accel scale = " << std::dec<< imu_.set_acc_scale(BITS_FS_16G) << std::endl;
+
+    usleep(100000);
+  	usleep(500000);
+  	usleep(500000);
+  	usleep(500000);
+  	usleep(500000);
+  	usleep(500000);
+
+    std::cout << "IMU INIT DONE" << std::endl;
 }
 
 /**
@@ -125,16 +150,22 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       break;
   }
 
-  // TODO: Fill imu message
+  // Fill imu message
+  const float dpsToRps = 0.01745;
+	imu->angular_velocity.x = 0; // Hopefully this is 0
+  imu->angular_velocity.y = 0; // Hopefully this is 0
+  imu->angular_velocity.x = imu.read_rot(2) * dpsToRps;
 
-  // 	pos->pose.position.x = x;
-  // 	pos->pose.position.y = 0;
-  // 	pos->pose.position.z = 0;
+  const float gravity = 9.80665;
+  imu->linear_acceleration.x = imu.read_acc(0) * gravity;
+  imu->linear_acceleration.y = imu.read_acc(1) * gravity;
+  imu->linear_acceleration.z = gravity; // Hopefully this is gravity
 
-  // 	pos->pose.orientation.x =  cos(radians/2);
-  // 	pos->pose.orientation.y =  0;
-  // 	pos->pose.orientation.z =  0;
-  // 	pos->pose.orientation.w =  sin(radians/2);
+  std::cout << "whoami: " << imu.whoami() << std::endl;
+  std::cout << "Temp: " << imu.read_temp() << ", R0: " << imu.read_rot(0) << ", R1: " << imu.read_rot(1) << ", R2: " << imu.read_rot(2)
+            << ", A0: " << imu.read_acc(0) << ", A1: "  << imu.read_acc(1) << ", A2: " << imu.read_acc(2) << std::endl;
+  usleep(500000);
+  usleep(500000);
 }
 
 /**

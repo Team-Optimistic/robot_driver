@@ -66,29 +66,7 @@ int main(int argc, char **argv)
 
   try
   {
-    mpu6000 imu(0, 500000);
-    std::cout << "supposedly inited" << std::endl;
-    std::cout << imu.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
-
-    usleep(100000);
-  	usleep(100000);
-
-  	std::cout << "gyro scale = " << std::dec<< imu.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
-
-    //half second wait. Function breaks with 1 million
-  	usleep(500000);
-  	usleep(500000);
-
-  	std::cout << "accel scale = " << std::dec<< imu.set_acc_scale(BITS_FS_16G) << std::endl;
-
-    usleep(100000);
-  	usleep(500000);
-  	usleep(500000);
-  	usleep(500000);
-  	usleep(500000);
-  	usleep(500000);
-
-    robotPOS robot(port, baud_rate, io);
+    robotPOS robot(port, baud_rate, io, 0, 500000);
     ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
                    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
     ros::Subscriber ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, &robot),
@@ -96,12 +74,6 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-      // std::cout << "whoami: " << imu.whoami() << std::endl;
-      // std::cout << "Temp: " << imu.read_temp() << ", R0: " << imu.read_rot(0) << ", R1: " << imu.read_rot(1) << ", R2: " << imu.read_rot(2)
-		  //           << ", A0: " << imu.read_acc(0) << ", A1: "  << imu.read_acc(1) << ", A2: " << imu.read_acc(2) << std::endl;
-      // usleep(500000);
-	    // usleep(500000);
-
       nav_msgs::Odometry odomOut;
       sensor_msgs::Imu imuOut;
 

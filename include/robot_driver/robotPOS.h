@@ -40,10 +40,12 @@
 #include <string>
 #include <ros/ros.h>
 
+#include "robot_driver/MPU6000.h"
+
 class robotPOS
 {
   public:
-    robotPOS(const std::string& port, uint32_t baud_rate, boost::asio::io_service& io);
+    robotPOS(const std::string& port, uint32_t baud_rate, boost::asio::io_service& io, int csChannel, long speed);
 
     ~robotPOS() {};
 
@@ -65,6 +67,8 @@ class robotPOS
   private:
     std::string port_; ///< @brief The serial port the driver is attached to
     uint32_t baud_rate_; ///< @brief The baud rate for the serial connection
+
+    mpu6000 imu_;
 
     static const uint8_t std_msg_type = 1, spc_msg_type = 2, mpc_msg_type = 3;
     static const uint8_t std_msg_length = 3, spc_msg_length = 3, mpc_msg_length = 3;
