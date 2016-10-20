@@ -44,7 +44,7 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
   ,serial_(io, port_)
 {
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
-    spcPub = n.advertise<nullptr>("robotPOS/spcRequest", 1000);
+    spcPub = n.advertise<std_msgs::Empty>("robotPOS/spcRequest", 1000);
     mpcPub = n.advertise<geometry_msgs::Point32>("robotPOS/pickedUpObject", 1000);
 }
 
