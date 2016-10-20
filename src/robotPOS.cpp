@@ -80,39 +80,34 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   switch (flagHolders[2])
   {
     case std_msg_type:
-      // Pose
-      odom->pose.pose.position.x = 0;
-      odom->pose.pose.position.y = 0;
-      odom->pose.pose.position.z = 0;
-
-      odom->pose.pose.orientation.x = 0;
-      odom->pose.pose.orientation.y = 0;
-      odom->pose.pose.orientation.z = 0;
-      odom->pose.pose.orientation.w = 0;
-
-      odom->pose.covariance = ODOM_POSE_COV_MAT;
-
       // Twist
-      odom->twist.twist.linear.x = 0.000125 * (ros::Time::now() - prevTime).toSec() / 1000; //B.S. data
-      odom->twist.twist.linear.y = 0;
+      const float conversion = 1;
+      odom->twist.twist.linear.x = 0;
+      odom->twist.twist.linear.y = ((msgData[1] + msgData[2]) / 2.0) * conversion;
       odom->twist.twist.linear.z = 0;
 
       odom->twist.twist.angular.x = 0;
       odom->twist.twist.angular.y = 0;
-      odom->twist.twist.angular.z = 0;
+      odom->twist.twist.angular.z = (msgData[1] - msgData[2]) * conversion;
 
       odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
-      // TODO: Fill imu message
+      // Pose
+      geometry_msgs::Quaternion quat = odom->pose.pose.orientation;
+      float theta = quatToEuler(quat) + (odom->twist.twist.angular.z / 2.0);
 
-      // 	pos->pose.position.x = x;
-      // 	pos->pose.position.y = 0;
-      // 	pos->pose.position.z = 0;
+      odom->pose.pose.position.x += cos(theta);
+      odom->pose.pose.position.y += sin(theta);
+      odom->pose.pose.position.z = 0;
 
-      // 	pos->pose.orientation.x =  cos(radians/2);
-      // 	pos->pose.orientation.y =  0;
-      // 	pos->pose.orientation.z =  0;
-      // 	pos->pose.orientation.w =  sin(radians/2);
+      theta += (odom->twist.twist.angular.z / 2.0);
+
+      odom->pose.pose.orientation.x = 0;
+      odom->pose.pose.orientation.y = 0;
+      odom->pose.pose.orientation.z = sin(theta / 2.0);
+      odom->pose.pose.orientation.w = sqrt(1.0) / 2;
+
+      odom->pose.covariance = ODOM_POSE_COV_MAT;
       break;
 
     case spc_msg_type:
@@ -129,6 +124,28 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       mpcPub.publish(out);
       break;
   }
+
+  // TODO: Fill imu message
+
+  // 	pos->pose.position.x = x;
+  // 	pos->pose.position.y = 0;
+  // 	pos->pose.position.z = 0;
+
+  // 	pos->pose.orientation.x =  cos(radians/2);
+  // 	pos->pose.orientation.y =  0;
+  // 	pos->pose.orientation.z =  0;
+  // 	pos->pose.orientation.w =  sin(radians/2);
+}
+
+/**
+ * Converts a quaternion to an euler angle (yaw only)
+ * @param  quat Quaternion
+ * @return  n   Euler angle (yaw)
+ */
+inline const float quatToEuler(const geometry_msgs::Quaternion& quat) const
+{
+  return atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
+                    ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
 }
 
 /**
@@ -143,8 +160,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   out[1] = in->pose.pose.position.x;
   out[2] = in->pose.pose.position.y;
   const geometry_msgs::Quaternion quat = in->pose.pose.orientation;
-  out[3] = atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
-                ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
+  out[3] = quatToEuler(quat);
 
   //Send header
   sendMsgHeader(std_msg_type);
