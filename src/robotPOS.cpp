@@ -155,11 +155,13 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 	imu->angular_velocity.x = 0; // Hopefully this is 0
   imu->angular_velocity.y = 0; // Hopefully this is 0
   imu->angular_velocity.x = imu.read_rot(2) * dpsToRps;
+  imu->angular_velocity_covariance = emptyIMUCov;
 
   const float gravity = 9.80665;
   imu->linear_acceleration.x = imu.read_acc(0) * gravity;
   imu->linear_acceleration.y = imu.read_acc(1) * gravity;
   imu->linear_acceleration.z = gravity; // Hopefully this is gravity
+  imu->linear_acceleration_covariance = emptyIMUCov;
 
   std::cout << "whoami: " << imu.whoami() << std::endl;
   std::cout << "Temp: " << imu.read_temp() << ", R0: " << imu.read_rot(0) << ", R1: " << imu.read_rot(1) << ", R2: " << imu.read_rot(2)
