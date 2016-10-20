@@ -103,7 +103,7 @@ class robotPOS
       0,    0,    0,    0,    0,    0.01
     }}; //Odometry twist covariance matrix
 
-    const float emptyIMUCov[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const boost::array<float, 9> emptyIMUCov = {{0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
     ros::NodeHandle n;
     ros::Publisher spcPub, mpcPub;

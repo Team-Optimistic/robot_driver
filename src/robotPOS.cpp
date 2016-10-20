@@ -49,7 +49,6 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
     mpcPub = n.advertise<geometry_msgs::Point32>("robotPOS/pickedUpObject", 1000);
 
     // Init imu
-    imu_(csChannel, speed);
     std::cout << "IMU INIT" << std::endl;
     std::cout << imu_.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
 
