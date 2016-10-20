@@ -99,6 +99,9 @@ class robotPOS
       0,    0,    0,    0,    0,    0.01
     }}; //Odometry twist covariance matrix
 
+    ros::NodeHandle n;
+    ros::Publisher mpcPub;
+
     //Counter for messages sent to cortex
     uint8_t outMsgCount = 0;
 
@@ -117,4 +120,12 @@ class robotPOS
      * @param type Type of message
      */
     void sendMsgHeader(const uint8_t type);
+
+    /**
+     * Verifies a message header
+     * @param  count Message count
+     * @param  type  Message type
+     * @return       If header is valid
+     */
+    inline const bool verifyMsgHeader(const uint8_t type, const uint8_t count);
 };

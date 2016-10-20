@@ -43,6 +43,7 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
   ,serial_(io, port_)
 {
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
+    mpcPub = n.advertise<geometry_msgs::Point32>("robotPOS/pickedUpObject", 1000);
 }
 
 /**
@@ -63,43 +64,69 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[1], 2));
 
+  // Verify msg count
+  if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
+  {
+    std::cout << "Message count invalid (" << flagHolders[2] << ") for type " << flagHolders[1] << "." << std::endl;
+  }
+
   // Load msg
   std::vector<uint8_t> msgData;
   boost::asio::read(serial_, boost::asio::buffer(msgData, getMsgLengthForType(flagHolders[2])));
 
-  // Pose
-  odom->pose.pose.position.x = 0;
-  odom->pose.pose.position.y = 0;
-  odom->pose.pose.position.z = 0;
+  // Use msg
+  switch (flagHolders[2])
+  {
+    case std_msg_type:
+      // Pose
+      odom->pose.pose.position.x = 0;
+      odom->pose.pose.position.y = 0;
+      odom->pose.pose.position.z = 0;
 
-  odom->pose.pose.orientation.x = 0;
-  odom->pose.pose.orientation.y = 0;
-  odom->pose.pose.orientation.z = 0;
-  odom->pose.pose.orientation.w = 0;
+      odom->pose.pose.orientation.x = 0;
+      odom->pose.pose.orientation.y = 0;
+      odom->pose.pose.orientation.z = 0;
+      odom->pose.pose.orientation.w = 0;
 
-  odom->pose.covariance = ODOM_POSE_COV_MAT;
+      odom->pose.covariance = ODOM_POSE_COV_MAT;
 
-  // Twist
-  odom->twist.twist.linear.x = 0.000125 * (ros::Time::now() - prevTime).toSec() / 1000; //B.S. data
-  odom->twist.twist.linear.y = 0;
-  odom->twist.twist.linear.z = 0;
+      // Twist
+      odom->twist.twist.linear.x = 0.000125 * (ros::Time::now() - prevTime).toSec() / 1000; //B.S. data
+      odom->twist.twist.linear.y = 0;
+      odom->twist.twist.linear.z = 0;
 
-  odom->twist.twist.angular.x = 0;
-  odom->twist.twist.angular.y = 0;
-  odom->twist.twist.angular.z = 0;
+      odom->twist.twist.angular.x = 0;
+      odom->twist.twist.angular.y = 0;
+      odom->twist.twist.angular.z = 0;
 
-  odom->twist.covariance = ODOM_TWIST_COV_MAT;
+      odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
-  // TODO: Fill imu message
+      // TODO: Fill imu message
 
-  // 	pos->pose.position.x = x;
-  // 	pos->pose.position.y = 0;
-  // 	pos->pose.position.z = 0;
+      // 	pos->pose.position.x = x;
+      // 	pos->pose.position.y = 0;
+      // 	pos->pose.position.z = 0;
 
-  // 	pos->pose.orientation.x =  cos(radians/2);
-  // 	pos->pose.orientation.y =  0;
-  // 	pos->pose.orientation.z =  0;
-  // 	pos->pose.orientation.w =  sin(radians/2);
+      // 	pos->pose.orientation.x =  cos(radians/2);
+      // 	pos->pose.orientation.y =  0;
+      // 	pos->pose.orientation.z =  0;
+      // 	pos->pose.orientation.w =  sin(radians/2);
+      break;
+
+    case spc_msg_type:
+      //Send the cortex the closest object behind the robot
+      
+      break;
+
+    case mpc_msg_type:
+      //Publish the object that got picked up
+      geometry_msgs::Point32 out;
+      out.x = msgData[0];
+      out.y = msgData[1];
+      out.z = msgData[2];
+      mpcPub.publish(out);
+      break;
+  }
 }
 
 /**
@@ -177,4 +204,15 @@ void robotPOS::sendMsgHeader(const uint8_t type)
   //Send count
   msgCounts[type - 1] = msgCounts[type - 1] + 1;
   boost::asio::write(serial_, boost::asio::buffer(&msgCounts[type - 1], 1));
+}
+
+/**
+ * Verifies a message header
+ * @param  type  Message type
+ * @param  count Message count
+ * @return       If header is valid
+ */
+inline const bool robotPOS::verifyMsgHeader(const uint8_t type, const uint8_t count)
+{
+  return (msgCounts[type] = msgCounts[type] + 1) == count;
 }
