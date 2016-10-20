@@ -52,7 +52,7 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
  */
 void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
-  boost::array<uint8_t, 3> flagHolders; //0 = msg, 1 = type, 2 = count
+  boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
 
   // Load start byte
   do
@@ -65,7 +65,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
   // Load msg
   std::vector<uint8_t> msgData;
-  boost::asio::read(serial_, boost::asio::buffer(msgData));
+  boost::asio::read(serial_, boost::asio::buffer(msgData, getMsgLengthForType(flagHolders[2])));
 
   // Pose
   odom->pose.pose.position.x = 0;
