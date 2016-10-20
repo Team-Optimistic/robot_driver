@@ -263,5 +263,11 @@ void robotPOS::sendMsgHeader(const uint8_t type)
  */
 inline const bool robotPOS::verifyMsgHeader(const uint8_t type, const uint8_t count)
 {
-  return (msgCounts[type] = msgCounts[type] + 1) == count;
+	if (count == (msgCounts[type] + 1 >= 0xFF ? 0 : msgCounts[type] + 1))
+  {
+    msgCounts[type] = count;
+    return true;
+  }
+
+  return false;
 }
