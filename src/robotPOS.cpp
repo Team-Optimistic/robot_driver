@@ -34,6 +34,7 @@
 
 #include <math.h>
 #include <geometry_msgs/Quaternion.h>
+#include <std_msgs/Empty.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -116,7 +117,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
     case spc_msg_type:
       //Tell motion_path_creator to tell the cortex which object to get
-      spcPub.publish(nullptr);
+      spcPub.publish(std_msgs::Empty());
       break;
 
     case mpc_msg_type:
