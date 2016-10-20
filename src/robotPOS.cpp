@@ -43,6 +43,7 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
   ,serial_(io, port_)
 {
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
+    spcPub = n.advertise<void>("robotPOS/spcRequest", 1000);
     mpcPub = n.advertise<geometry_msgs::Point32>("robotPOS/pickedUpObject", 1000);
 }
 
@@ -114,8 +115,8 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       break;
 
     case spc_msg_type:
-      //Send the cortex the closest object behind the robot
-      
+      //Tell motion_path_creator to tell the cortex which object to get
+      spcPub.publish(nullptr);
       break;
 
     case mpc_msg_type:

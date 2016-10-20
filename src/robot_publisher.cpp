@@ -121,6 +121,8 @@ int main(int argc, char **argv)
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
 
       odomPub.publish(odomOut);
+
+      ros::spinOnce();
     }
 
     return 0;

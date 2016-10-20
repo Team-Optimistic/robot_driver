@@ -100,7 +100,7 @@ class robotPOS
     }}; //Odometry twist covariance matrix
 
     ros::NodeHandle n;
-    ros::Publisher mpcPub;
+    ros::Publisher spcPub, mpcPub;
 
     //Counter for messages sent to cortex
     uint8_t outMsgCount = 0;
