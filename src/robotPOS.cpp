@@ -39,9 +39,10 @@
 #include "robot_driver/robotPOS.h"
 
 robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
-  port_(port)
-  ,baud_rate_(baud_rate)
-  ,serial_(io, port_)
+  port_(port),
+  baud_rate_(baud_rate),
+  serial_(io, port_),
+  imu_(csChannel, speed)
 {
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
     spcPub = n.advertise<std_msgs::Empty>("robotPOS/spcRequest", 1000);
@@ -105,6 +106,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   switch (flagHolders[2])
   {
     case std_msg_type:
+    {
       // Twist
       const float conversion = 1;
       odom->twist.twist.linear.x = 0;
@@ -134,6 +136,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       odom->pose.covariance = ODOM_POSE_COV_MAT;
       break;
+    }
 
     case spc_msg_type:
       //Tell motion_path_creator to tell the cortex which object to get
@@ -141,6 +144,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       break;
 
     case mpc_msg_type:
+    {
       //Publish the object that got picked up
       geometry_msgs::Point32 out;
       out.x = msgData[0];
@@ -148,26 +152,21 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       out.z = msgData[2];
       mpcPub.publish(out);
       break;
+    }
   }
 
   // Fill imu message
   const float dpsToRps = 0.01745;
 	imu->angular_velocity.x = 0; // Hopefully this is 0
   imu->angular_velocity.y = 0; // Hopefully this is 0
-  imu->angular_velocity.x = imu.read_rot(2) * dpsToRps;
+  imu->angular_velocity.x = imu_.read_rot(2) * dpsToRps;
   imu->angular_velocity_covariance = emptyIMUCov;
 
   const float gravity = 9.80665;
-  imu->linear_acceleration.x = imu.read_acc(0) * gravity;
-  imu->linear_acceleration.y = imu.read_acc(1) * gravity;
+  imu->linear_acceleration.x = imu_.read_acc(0) * gravity;
+  imu->linear_acceleration.y = imu_.read_acc(1) * gravity;
   imu->linear_acceleration.z = gravity; // Hopefully this is gravity
   imu->linear_acceleration_covariance = emptyIMUCov;
-
-  std::cout << "whoami: " << imu.whoami() << std::endl;
-  std::cout << "Temp: " << imu.read_temp() << ", R0: " << imu.read_rot(0) << ", R1: " << imu.read_rot(1) << ", R2: " << imu.read_rot(2)
-            << ", A0: " << imu.read_acc(0) << ", A1: "  << imu.read_acc(1) << ", A2: " << imu.read_acc(2) << std::endl;
-  usleep(500000);
-  usleep(500000);
 }
 
 /**
@@ -175,7 +174,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
  * @param  quat Quaternion
  * @return  n   Euler angle (yaw)
  */
-inline const float quatToEuler(const geometry_msgs::Quaternion& quat) const
+inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
 {
   return atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
                     ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
