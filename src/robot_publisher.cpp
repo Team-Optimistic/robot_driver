@@ -54,7 +54,6 @@ int main(int argc, char **argv)
   std::string port;
   int baud_rate;
   std::string frame_id;
-  std::string world_frame("map"), base_link_frame("base_link");
 
   // priv_nh.param("port", port, std::string("/dev/ttyS0"));
   n.getParam("port", port);
@@ -77,11 +76,11 @@ int main(int argc, char **argv)
       nav_msgs::Odometry odomOut;
       sensor_msgs::Imu imuOut;
 
-      odomOut.header.frame_id = world_frame;
+      odomOut.header.frame_id = "map";
       odomOut.header.stamp = ros::Time::now();
-      odomOut.child_frame_id = base_link_frame;
+      odomOut.child_frame_id = "base_link"
 
-      imuOut.header.frame_id = world_frame;
+      imuOut.header.frame_id = "base_link"
       imuOut.header.stamp = ros::Time::now();
 
       robot.poll(&odomOut, &imuOut);
