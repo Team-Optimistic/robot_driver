@@ -78,9 +78,9 @@ int main(int argc, char **argv)
 
       odomOut.header.frame_id = "map";
       odomOut.header.stamp = ros::Time::now();
-      odomOut.child_frame_id = "base_link"
+      odomOut.child_frame_id = "base_link";
 
-      imuOut.header.frame_id = "base_link"
+      imuOut.header.frame_id = "base_link";
       imuOut.header.stamp = ros::Time::now();
 
       robot.poll(&odomOut, &imuOut);
