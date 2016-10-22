@@ -39,6 +39,8 @@
 #include <boost/array.hpp>
 #include <string>
 #include <ros/ros.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/PointCloud.h>
 
 #include "robot_driver/MPU6000.h"
 
@@ -63,7 +65,7 @@ class robotPOS
     /**
      * Callback function for sending new object position to cortex
      */
-    void mpc_callback(const geometry_msgs::Point32::ConstPtr& in);
+    void mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in);
   private:
     std::string port_; ///< @brief The serial port the driver is attached to
     uint32_t baud_rate_; ///< @brief The baud rate for the serial connection
