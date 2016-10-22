@@ -209,14 +209,14 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
   sensor_msgs::PointCloud cloud;
   sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
 
-  const int msgLength = 3 * cloud.points.size();
+  const int msgLength = 12;
 
-  std::vector<uint8_t> out(msgLength);
-  for (auto&& p : cloud.points)
+  std::vector<uint8_t> out(4);
+  for (int i = 0; i < out.size(); i++)
   {
-    out.push_back(p.x);
-    out.push_back(p.y);
-    out.push_back(p.z);
+    out.push_back(cloud.points[i].x);
+    out.push_back(cloud.points[i].y);
+    out.push_back(cloud.points[i].z);
   }
 
   //Send header
