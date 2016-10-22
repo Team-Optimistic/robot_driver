@@ -32,7 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <math.h>
+#include <cmath.h>
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/point_cloud_conversion.h>
@@ -186,8 +186,8 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
  */
 inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
 {
-  return atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
-                    ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
+  return std::atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
+                         ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
 }
 
 /**
