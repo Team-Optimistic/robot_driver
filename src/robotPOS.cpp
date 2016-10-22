@@ -35,6 +35,7 @@
 #include <math.h>
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Empty.h>
+#include <sensor_msgs/point_cloud_conversion.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -203,10 +204,20 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 /**
  * Callback function for sending new object position to cortex
  */
-void robotPOS::mpc_callback(const geometry_msgs::Point32::ConstPtr& in)
+void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 {
-  const int msgLength = 3;
-  boost::array<uint8_t, msgLength> out = {{(uint8_t)in->x, (uint8_t)in->y, (uint8_t)in->z}};
+  sensor_msgs::PointCloud cloud;
+  sensor_msgs::convertPointCloud2ToPointCloud(in, *cloud);
+
+  const int msgLength = 3 * cloud.points.size();
+
+  boost::array<uint8_t, msgLength> out;
+  for (auto&& p : cloud.points)
+  {
+    out.push_back(p.x);
+    out.push_back(p.y);
+    out.push_back(p.z);
+  }
 
   //Send header
   sendMsgHeader(mpc_msg_type);
