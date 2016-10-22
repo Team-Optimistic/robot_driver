@@ -47,7 +47,7 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
 {
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
     spcPub = n.advertise<std_msgs::Empty>("robotPOS/spcRequest", 1000);
-    mpcPub = n.advertise<geometry_msgs::Point32>("robotPOS/pickedUpObject", 1000);
+    mpcPub = n.advertise<sensor_msgs::PointCloud2>("robotPOS/pickedUpObjects", 1000);
 
     // Init imu
     std::cout << "IMU INIT" << std::endl;
@@ -102,9 +102,10 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   std::vector<uint8_t> msgData;
   boost::asio::read(serial_, boost::asio::buffer(msgData, getMsgLengthForType(flagHolders[2])));
 
-  // Use msg
-  switch (flagHolders[2])
+  // Parse msg
+  switch (flagHolders[1])
   {
+    //STD msg means the robot is telling us its current sensor values
     case std_msg_type:
     {
       // Twist
@@ -138,19 +139,28 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       break;
     }
 
+    //SPC msg means the robot wants to know whats behind it
+    //What's behind gets published from motion_path_creator as a regular MPC msg
     case spc_msg_type:
       //Tell motion_path_creator to tell the cortex which object to get
       spcPub.publish(std_msgs::Empty());
       break;
 
+    //MPC msg means the robot is telling us it has scored its last objects
     case mpc_msg_type:
     {
-      //Publish the object that got picked up
-      geometry_msgs::Point32 out;
-      out.x = msgData[0];
-      out.y = msgData[1];
-      out.z = msgData[2];
+      //Publish the objects that got picked up
+      sensor_msgs::PointCloud2 out;
+      sensor_msgs::convertPointCloudToPointCloud2(cloud, out);
       mpcPub.publish(out);
+
+      //Set flag
+      didPickUpObjects = true;
+      break;
+    }
+
+    default:
+    {
       break;
     }
   }
@@ -202,28 +212,34 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 }
 
 /**
- * Callback function for sending new object position to cortex
+ * Callback function for sending new object positions to cortex
  */
 void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 {
-  sensor_msgs::PointCloud cloud;
-  sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
-
-  const int msgLength = 12;
-
-  std::vector<uint8_t> out(4);
-  for (int i = 0; i < out.size(); i++)
+  //Only tell the robot to get more objects if it isn't busy
+  if (didPickUpObjects)
   {
-    out.push_back(cloud.points[i].x);
-    out.push_back(cloud.points[i].y);
-    out.push_back(cloud.points[i].z);
+    sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
+
+    const int msgLength = 12;
+
+    std::vector<uint8_t> out(4);
+    for (int i = 0; i < out.size(); i++)
+    {
+      out.push_back(cloud.points[i].x);
+      out.push_back(cloud.points[i].y);
+      out.push_back(cloud.points[i].z);
+    }
+
+    //Send header
+    sendMsgHeader(mpc_msg_type);
+
+    //Send data
+    boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
+
+    //Set flag
+    didPickUpObjects = false;
   }
-
-  //Send header
-  sendMsgHeader(mpc_msg_type);
-
-  //Send data
-  boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
 }
 
 /**

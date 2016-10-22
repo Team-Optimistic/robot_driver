@@ -63,7 +63,7 @@ class robotPOS
     void ekf_callback(const nav_msgs::Odometry::ConstPtr& in);
 
     /**
-     * Callback function for sending new object position to cortex
+     * Callback function for sending new object positions to cortex
      */
     void mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in);
   private:
@@ -109,6 +109,12 @@ class robotPOS
 
     ros::NodeHandle n;
     ros::Publisher spcPub, mpcPub;
+
+    //Next objects to pick up
+    sensor_msgs::PointCloud cloud;
+
+    //Whether the robot has picked up the last objects we sent it
+    bool didPickUpObjects = false;
 
     //Counter for messages sent to cortex
     uint8_t outMsgCount = 0;
