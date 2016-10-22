@@ -207,11 +207,11 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 {
   sensor_msgs::PointCloud cloud;
-  sensor_msgs::convertPointCloud2ToPointCloud(in, *cloud);
+  sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
 
   const int msgLength = 3 * cloud.points.size();
 
-  std::vector<uint8_t out(msgLength);
+  std::vector<uint8_t> out(msgLength);
   for (auto&& p : cloud.points)
   {
     out.push_back(p.x);
