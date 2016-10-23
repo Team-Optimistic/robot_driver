@@ -46,8 +46,8 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
   imu_(csChannel, speed)
 {
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
-    spcPub = n.advertise<std_msgs::Empty>("robotPOS/spcRequest", 1000);
-    mpcPub = n.advertise<sensor_msgs::PointCloud2>("robotPOS/pickedUpObjects", 1000);
+    spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
+    mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
 
     // Init imu
     std::cout << "IMU INIT" << std::endl;
