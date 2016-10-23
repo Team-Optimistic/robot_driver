@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
                    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
     ros::Subscriber ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, &robot),
-                    mpcSub = n.subscribe<sensor_msgs::PointCloud2>("mpc/nextObject", 1000, &robotPOS::mpc_callback, &robot);
+                    mpcSub = n.subscribe<sensor_msgs::PointCloud2>("nextObjects", 1000, &robotPOS::mpc_callback, &robot);
 
     while (ros::ok())
     {
