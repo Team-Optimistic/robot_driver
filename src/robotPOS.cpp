@@ -32,7 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <cmath.h>
+#include <cmath>
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/point_cloud_conversion.h>
