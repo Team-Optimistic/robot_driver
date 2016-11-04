@@ -113,10 +113,10 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       // Twist
       const float conversion = 1;
 
-      constexpr uint8_t rightDelta = (msgData[2] - lastRightQuad),
-                        leftDelta = (msgData[1] - lastLeftQuad);
+      const uint8_t rightDelta = (msgData[2] - lastRightQuad),
+                    leftDelta = (msgData[1] - lastLeftQuad);
 
-      constexpr uint8_t avg = (rightDelta - leftDelta) / 2.0;
+      const uint8_t avg = (rightDelta - leftDelta) / 2.0;
       lastRightQuad = msgData[2];
       lastLeftQuad = msgData[1];
 
