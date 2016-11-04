@@ -81,16 +81,21 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
  */
 void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
+ROS_INFO("poll 1");
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
+ROS_INFO("poll 2");
 
   // Load start byte
   do
   {
     boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
   } while (flagHolders[0] != 0xFA);
+ROS_INFO("poll 3");
 
+ROS_INFO("poll 4");
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[1], 2));
+ROS_INFO("poll 5");
 
   // Verify msg count
   if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
@@ -98,10 +103,12 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     std::cout << "Message count invalid (" << flagHolders[2] << ") for type " << flagHolders[1] << "." << std::endl;
   }
 
+ROS_INFO("poll 6");
   // Load msg
   std::vector<uint8_t> msgData;
   boost::asio::read(serial_, boost::asio::buffer(msgData, getMsgLengthForType(flagHolders[2])));
 
+ROS_INFO("poll 7");
   // Parse msg
   switch (flagHolders[1])
   {

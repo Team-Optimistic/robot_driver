@@ -1,10 +1,10 @@
 <launch>
-  <node pkg="robot_driver" type="robot_driver" name="robot_driver" clear_params="true">
+  <node pkg="robot_driver" type="robot_driver" name="robot_driver" clear_params="true" output="screen">
     <param name="port" value="/dev/ttyS0" />
   </node>
 
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
-    <rosparam command="load" file="~/catkin_ws/src/robot_driver/params/ekf_template.yaml" />
+    <rosparam command="load" file="../params/ekf_template.yaml" />
   </node>
 
   <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true">
@@ -16,6 +16,8 @@
   <node pkg="motion_path_creator" type="motion_path_creator" name="motion_path_creator" clear_params="true">
   </node>
 
-  <node pkg="goat_lidar_merging" type="merger" name="merger" clear_params="true">
-  </node>
+  <!--
+    <node pkg="goat_lidar_merging" type="goat_lidar_merging" name="goat_lidar_merging" clear_params="true">
+    </node>
+  -->
 </launch>

@@ -55,8 +55,8 @@ int main(int argc, char **argv)
   int baud_rate;
   std::string frame_id;
 
-  // priv_nh.param("port", port, std::string("/dev/ttyS0"));
-  n.getParam("port", port);
+  priv_nh.param("port", port, std::string("/dev/ttyS0"));
+  // n.getParam("port", port);
   priv_nh.param("baud_rate", baud_rate, 9600);
   priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
 
@@ -92,8 +92,9 @@ int main(int argc, char **argv)
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
 
       odomPub.publish(odomOut);
-
+ROS_INFO("published");
       ros::spinOnce();
+ROS_INFO("spinOnce done");
     }
 
     return 0;
