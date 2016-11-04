@@ -81,21 +81,21 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
  */
 void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
-ROS_INFO("poll 1");
+  ROS_INFO("poll 1");
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
-ROS_INFO("poll 2");
+  ROS_INFO("poll 2");
 
   // Load start byte
   do
   {
     boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
   } while (flagHolders[0] != 0xFA);
-ROS_INFO("poll 3");
+  ROS_INFO("poll 3");
 
-ROS_INFO("poll 4");
+  ROS_INFO("poll 4");
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[1], 2));
-ROS_INFO("poll 5");
+  ROS_INFO("poll 5");
 
   // Verify msg count
   if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
@@ -103,12 +103,14 @@ ROS_INFO("poll 5");
     std::cout << "Message count invalid (" << flagHolders[2] << ") for type " << flagHolders[1] << "." << std::endl;
   }
 
-ROS_INFO("poll 6");
+  ROS_INFO("poll 6");
   // Load msg
   std::vector<uint8_t> msgData;
   boost::asio::read(serial_, boost::asio::buffer(msgData, getMsgLengthForType(flagHolders[2])));
 
-ROS_INFO("poll 7");
+  ROS_INFO("poll 7");
+  static uint8_t lastRightQuad = 0, lastLeftQuad = 0;
+  static ros::Time lastTime = ros::Time::now();
   // Parse msg
   switch (flagHolders[1])
   {
@@ -117,22 +119,32 @@ ROS_INFO("poll 7");
     {
       // Twist
       const float conversion = 1;
+
+      constexpr uint8_t rightDelta = (msgData[2] - lastRightQuad),
+                        leftDelta = (msgData[1] - lastLeftQuad);
+
+      constexpr uint8_t avg = (rightDelta - leftDelta) / 2.0;
+      lastRightQuad = msgData[2];
+      lastLeftQuad = msgData[1];
+
+      const auto dt = (ros::Time::now() - lastTime).toSec();
+
+      geometry_msgs::Quaternion quat = odom->pose.pose.orientation;
+      float theta = quatToEuler(quat) + (odom->twist.twist.angular.z / 2.0);
+
       odom->twist.twist.linear.x = 0;
-      odom->twist.twist.linear.y = ((msgData[1] + msgData[2]) / 2.0) * conversion;
+      odom->twist.twist.linear.y = avg * dt;
       odom->twist.twist.linear.z = 0;
 
       odom->twist.twist.angular.x = 0;
       odom->twist.twist.angular.y = 0;
       odom->twist.twist.angular.z = (msgData[1] - msgData[2]) * conversion;
 
-      odom->twist.covariance = ODOM_TWIST_COV_MAT;
+      // odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
       // Pose
-      geometry_msgs::Quaternion quat = odom->pose.pose.orientation;
-      float theta = quatToEuler(quat) + (odom->twist.twist.angular.z / 2.0);
-
-      odom->pose.pose.position.x += cos(theta);
-      odom->pose.pose.position.y += sin(theta);
+      odom->pose.pose.position.x += avg * cos(theta);
+      odom->pose.pose.position.y += avg * sin(theta);
       odom->pose.pose.position.z = 0;
 
       theta += (odom->twist.twist.angular.z / 2.0);
@@ -142,16 +154,18 @@ ROS_INFO("poll 7");
       odom->pose.pose.orientation.z = sin(theta / 2.0);
       odom->pose.pose.orientation.w = sqrt(1.0) / 2;
 
-      odom->pose.covariance = ODOM_POSE_COV_MAT;
+      // odom->pose.covariance = ODOM_POSE_COV_MAT;
       break;
     }
 
     //SPC msg means the robot wants to know whats behind it
     //What's behind gets published from motion_path_creator as a regular MPC msg
     case spc_msg_type:
+    {
       //Tell motion_path_creator to tell the cortex which object to get
       spcPub.publish(std_msgs::Empty());
       break;
+    }
 
     //MPC msg means the robot is telling us it has scored its last objects
     case mpc_msg_type:

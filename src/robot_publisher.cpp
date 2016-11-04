@@ -71,16 +71,17 @@ int main(int argc, char **argv)
     ros::Subscriber ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, &robot),
                     mpcSub = n.subscribe<sensor_msgs::PointCloud2>("nextObjects", 1000, &robotPOS::mpc_callback, &robot);
 
+    nav_msgs::Odometry odomOut;
+    sensor_msgs::Imu imuOut;
+
+    odomOut.header.frame_id = "map";
+    odomOut.child_frame_id = "base_link";
+
+    imuOut.header.frame_id = "base_link";
+
     while (ros::ok())
     {
-      nav_msgs::Odometry odomOut;
-      sensor_msgs::Imu imuOut;
-
-      odomOut.header.frame_id = "map";
       odomOut.header.stamp = ros::Time::now();
-      odomOut.child_frame_id = "base_link";
-
-      imuOut.header.frame_id = "base_link";
       imuOut.header.stamp = ros::Time::now();
 
       robot.poll(&odomOut, &imuOut);
@@ -92,9 +93,10 @@ int main(int argc, char **argv)
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
 
       odomPub.publish(odomOut);
-ROS_INFO("published");
+      ROS_INFO("published");
+
       ros::spinOnce();
-ROS_INFO("spinOnce done");
+      ROS_INFO("spinOnce done");
     }
 
     return 0;
