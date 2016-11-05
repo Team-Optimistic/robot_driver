@@ -86,17 +86,15 @@ int main(int argc, char **argv)
 
       robot.poll(&odomOut, &imuOut);
 
-      geometry_msgs::Point xyz = odomOut.pose.pose.position;
+      /*geometry_msgs::Point xyz = odomOut.pose.pose.position;
       geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
       transform.setRotation( tf::Quaternion(direction.x, direction.y, direction.z, direction.w) );
       transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
-      br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
+      br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));*/
 
       odomPub.publish(odomOut);
-      ROS_INFO("published");
 
       ros::spinOnce();
-      ROS_INFO("spinOnce done");
     }
 
     return 0;

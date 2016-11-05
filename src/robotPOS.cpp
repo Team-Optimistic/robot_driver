@@ -36,6 +36,7 @@
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/point_cloud_conversion.h>
+#include <iostream>
 
 #include "robot_driver/robotPOS.h"
 
@@ -67,9 +68,9 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
     usleep(100000);
   	usleep(500000);
   	usleep(500000);
-  	usleep(500000);
-  	usleep(500000);
-  	usleep(500000);
+  	//usleep(500000);
+  	//usleep(500000);
+  	//usleep(500000);
 
     std::cout << "IMU INIT DONE" << std::endl;
 }
@@ -82,13 +83,14 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
 void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
-
+std::cout << "loading byte..." << std::endl;
   // Load start byte
   do
   {
     boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
+std::cout << unsigned(flagHolders[0]) << std::endl;
   } while (flagHolders[0] != 0xFA);
-
+std::cout << "byte found!" << std::endl;
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[1], 2));
 
@@ -101,7 +103,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   // Load msg
   std::vector<uint8_t> msgData;
   boost::asio::read(serial_, boost::asio::buffer(msgData, getMsgLengthForType(flagHolders[2])));
-
+/*
   static uint8_t lastRightQuad = 0, lastLeftQuad = 0;
   static ros::Time lastTime = ros::Time::now();
   // Parse msg
@@ -191,6 +193,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   imu->linear_acceleration.y = imu_.read_acc(1) * gravity;
   imu->linear_acceleration.z = gravity; // Hopefully this is gravity
   imu->linear_acceleration_covariance = emptyIMUCov;
+*/
 }
 
 /**
@@ -223,6 +226,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 
   //Send data
   boost::asio::write(serial_,  boost::asio::buffer(&out[0], msgLength));
+std::cout << "sent std msg" << std::endl;
 }
 
 /**
@@ -253,6 +257,8 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 
     //Set flag
     didPickUpObjects = false;
+
+std::cout << "sent mpc msg" << std::endl;
   }
 }
 
@@ -292,8 +298,9 @@ void robotPOS::sendMsgHeader(const uint8_t type)
   boost::asio::write(serial_, boost::asio::buffer(&msgTypes[type - 1], 1));
 
   //Send count
-  msgCounts[type - 1] = msgCounts[type - 1] + 1;
+  msgCounts[type - 1] = msgCounts[type - 1] + 1 >= 255 ? 0 : msgCounts[type - 1] + 1;
   boost::asio::write(serial_, boost::asio::buffer(&msgCounts[type - 1], 1));
+  std::cout << "Sent count: " << unsigned(msgCounts[type-1]) << ", for type: " << unsigned(type) << std::endl;
 }
 
 /**
@@ -304,11 +311,23 @@ void robotPOS::sendMsgHeader(const uint8_t type)
  */
 inline const bool robotPOS::verifyMsgHeader(const uint8_t type, const uint8_t count)
 {
-	if (count == (msgCounts[type] + 1 >= 0xFF ? 0 : msgCounts[type] + 1))
+if (type > 0 && type < 3)
+{
+  if (isFirstMsg)
+  {
+    msgCounts[type] = count;
+    isFirstMsg = false;
+    return true;
+  }
+  else if (count == (msgCounts[type] + 1 >= 0xFF ? 0 : msgCounts[type] + 1))
   {
     msgCounts[type] = count;
     return true;
   }
-
+}
+else
+{
+std::cout << "verifyMsgHeader: bad type" << std::endl;
+}
   return false;
 }

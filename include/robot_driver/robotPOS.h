@@ -77,6 +77,7 @@ class robotPOS
 
     static const int msgType_Count = 3;
     const boost::array<uint8_t, msgType_Count> msgTypes = {{std_msg_type, spc_msg_type, mpc_msg_type}};
+    bool isFirstMsg = true;
     boost::array<uint8_t, msgType_Count> msgCounts = {{0, 0, 0}};
 
     boost::asio::serial_port serial_; // UART port for the Cortex
