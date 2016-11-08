@@ -55,9 +55,11 @@ int main(int argc, char **argv)
   int baud_rate;
   std::string frame_id;
 
-  priv_nh.param("port", port, std::string("/dev/ttyS0"));
-  // n.getParam("port", port);
-  priv_nh.param("baud_rate", baud_rate, 9600);
+  priv_nh.param("port", port, std::string("/dev/ttyUSB0"));
+  //n.getParam("port", port);
+  priv_nh.param("baud_rate", baud_rate, 115200);
+  //n.getParam("baud_rate", baud_rate);
+  ROS_INFO("Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
   priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
 
   boost::asio::io_service io;

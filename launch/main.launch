@@ -1,6 +1,7 @@
 <launch>
   <node pkg="robot_driver" type="robot_driver" name="robot_driver" clear_params="true" output="screen">
-    <param name="port" value="/dev/ttyS0" />
+    <param name="port" value="/dev/ttyUSB0" type="str" />
+    <param name="baud_rate" value="115200" type="int" />
   </node>
 
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
@@ -9,7 +10,7 @@
 
   <!--
   <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true">
-      <param name="port" value="/dev/ttyUSB0" />
+      <param name="port" value="/dev/ttyUSB1" />
   </node>
   -->
 

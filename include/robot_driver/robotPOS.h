@@ -73,7 +73,9 @@ class robotPOS
     mpu6000 imu_;
 
     static const uint8_t std_msg_type = 1, spc_msg_type = 2, mpc_msg_type = 3;
-    static const uint8_t std_msg_length = 3, spc_msg_length = 3, mpc_msg_length = 3;
+
+    //Lengths for recieved messages
+    static const uint8_t std_msg_length = 9, spc_msg_length = 3, mpc_msg_length = 3;
 
     static const int msgType_Count = 3;
     const boost::array<uint8_t, msgType_Count> msgTypes = {{std_msg_type, spc_msg_type, mpc_msg_type}};
@@ -116,9 +118,6 @@ class robotPOS
 
     //Whether the robot has picked up the last objects we sent it
     bool didPickUpObjects = false;
-
-    //Counter for messages sent to cortex
-    uint8_t outMsgCount = 0;
 
     //Starting flag for sending a message to the cortex
     const boost::array<uint8_t, 1> startFlag  = {{0xFA}};
