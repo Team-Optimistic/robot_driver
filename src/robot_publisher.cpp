@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   int baud_rate;
   std::string frame_id;
 
-  priv_nh.param("port", port, std::string("/dev/ttyUSB0"));
+  priv_nh.param("port", port, std::string("/dev/cortexUSB"));
   //n.getParam("port", port);
   priv_nh.param("baud_rate", baud_rate, 115200);
   //n.getParam("baud_rate", baud_rate);
