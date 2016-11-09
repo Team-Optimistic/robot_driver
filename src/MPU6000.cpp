@@ -48,14 +48,14 @@ void mpu6000::wakeup()
 
 	std::cout << "wakeup:"<< std::hex << (int)response << std::endl;
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		usleep(500000);
 	}
 
 	writeReg(MPUREG_PWR_MGMT_1, MPU_CLK_SEL_PLLGYROZ);
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		usleep(500000);
 	}

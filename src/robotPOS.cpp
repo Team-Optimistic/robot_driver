@@ -37,6 +37,7 @@
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <iostream>
+#include <tf/transform_broadcaster.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -55,19 +56,19 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
     std::cout << imu_.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
 
     usleep(100000);
-  	usleep(100000);
+  	//usleep(100000);
 
   	std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
 
     //half second wait. Function breaks with 1 million
   	usleep(500000);
-  	usleep(500000);
+  	//usleep(500000);
 
   	std::cout << "accel scale = " << std::dec<< imu_.set_acc_scale(BITS_FS_16G) << std::endl;
 
     usleep(100000);
   	usleep(500000);
-  	usleep(500000);
+  	//usleep(500000);
   	//usleep(500000);
   	//usleep(500000);
   	//usleep(500000);
@@ -116,61 +117,67 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     //STD msg means the robot is telling us its current sensor values
     case std_msg_type:
     {
-      long2Bytes quads;
+        long2Bytes quads;
 
-	  //Read in left quads from 4 byte union
-      for (int i = 0; i < 4; i++)
-      {
-        quads.b[i] = msgData[i + 1];
-      }
-      const int32_t leftQuad = quads.l;
+	    //Read in left quads from 4 byte union
+        for (int i = 0; i < 4; i++)
+        {
+          quads.b[i] = msgData[i + 1];
+        }
+        const int32_t leftQuad = quads.l;
 
-      //Read in right quads from 4 byte union
-      for (int i = 0; i < 4; i++)
-      {
-        quads.b[i] = msgData[i + 5];
-      }
-      const int32_t rightQuad = quads.l;
+        //Read in right quads from 4 byte union
+        for (int i = 0; i < 4; i++)
+        {
+          quads.b[i] = msgData[i + 5];
+        }
+        const int32_t rightQuad = quads.l;
 
-      // Twist
-      const float conversion = 1;
+        // Twist
+        const int32_t rightDelta = (rightQuad - lastRightQuad),
+                      leftDelta = (leftQuad - lastLeftQuad);
 
-      const int32_t rightDelta = (rightQuad - lastRightQuad),
-                    leftDelta = (leftQuad - lastLeftQuad);
+        lastRightQuad = rightQuad;
+        lastLeftQuad = leftQuad;
 
-      const auto avg = (rightDelta - leftDelta) / 2.0;
-      lastRightQuad = rightQuad;
-      lastLeftQuad = leftQuad;
+        const auto avg = (rightDelta - leftDelta) / 2.0;
 
-      const auto dt = (ros::Time::now() - lastTime).toSec();
+        const auto dt = (ros::Time::now() - lastTime).toSec();
+		lastTime = ros::Time::now();
 
-      geometry_msgs::Quaternion quat = odom->pose.pose.orientation;
-      float theta = quatToEuler(quat) + (odom->twist.twist.angular.z / 2.0);
+        const float theta = quatToEuler(odom->pose.pose.orientation) + ((rightDelta - leftDelta) * dt);
 
-      odom->twist.twist.linear.x = 0;
-      odom->twist.twist.linear.y = avg * dt;
-      odom->twist.twist.linear.z = 0;
+		const auto vx = rightDelta / dt,
+				   vy = leftDelta / dt,
+				   vtheta = theta / dt;
 
-      odom->twist.twist.angular.x = 0;
-      odom->twist.twist.angular.y = 0;
-      odom->twist.twist.angular.z = (msgData[1] - msgData[2]) * conversion;
+		const auto dx = (vx * cos(theta) - vy * sin(theta)) * dt,
+				   dy = (vx * sin(theta) + vy * cos(theta)) * dt;
 
-      // odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
-      // Pose
-      odom->pose.pose.position.x += avg * cos(theta);
-      odom->pose.pose.position.y += avg * sin(theta);
-      odom->pose.pose.position.z = 0;
+        odom->twist.twist.linear.x = vx;
+        odom->twist.twist.linear.y = vy;
+        odom->twist.twist.linear.z = 0;
 
-      theta += (odom->twist.twist.angular.z / 2.0);
+        odom->twist.twist.angular.x = 0;
+        odom->twist.twist.angular.y = 0;
+        odom->twist.twist.angular.z = vtheta;
 
-      odom->pose.pose.orientation.x = 0;
-      odom->pose.pose.orientation.y = 0;
-      odom->pose.pose.orientation.z = sin(theta / 2.0);
-      odom->pose.pose.orientation.w = sqrt(1.0) / 2;
+        // odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
-      // odom->pose.covariance = ODOM_POSE_COV_MAT;
-      break;
+        // Pose
+        odom->pose.pose.position.x += dx;
+        odom->pose.pose.position.y += dy;
+        odom->pose.pose.position.z = 0;
+
+        odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(theta);
+
+        // odom->pose.covariance = ODOM_POSE_COV_MAT;
+
+        //ROS_INFO("quat: z: %1.2f, w: %1.2f", odom->pose.pose.orientation.z, odom->pose.pose.orientation.w);
+        ROS_INFO("pos x: %1.2f, pos y: %1.2f, theta: %1.2f", odom->pose.pose.position.x, odom->pose.pose.position.y, quatToEuler(odom->pose.pose.orientation));
+
+        break;
     }
 
     //SPC msg means the robot wants to know whats behind it

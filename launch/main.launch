@@ -8,11 +8,8 @@
     <rosparam command="load" file="../params/ekf_template.yaml" />
   </node>
 
-  <!--
   <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true">
-      <param name="port" value="/dev/ttyUSB1" />
   </node>
-  -->
 
   <node pkg="motion_path_creator" type="motion_path_creator" name="motion_path_creator" clear_params="true">
   </node>
