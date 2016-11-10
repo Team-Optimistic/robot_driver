@@ -69,7 +69,7 @@ class robotPOS
   private:
     std::string port_; ///< @brief The serial port the driver is attached to
     uint32_t baud_rate_; ///< @brief The baud rate for the serial connection
-
+    const float straightConversion = 0.1 , thetaConversion = 0.1;
     mpu6000 imu_;
 
     static const uint8_t std_msg_type = 1, spc_msg_type = 2, mpc_msg_type = 3;

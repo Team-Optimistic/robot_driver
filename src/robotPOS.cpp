@@ -41,39 +41,39 @@
 
 #include "robot_driver/robotPOS.h"
 
-robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
-  port_(port),
-  baud_rate_(baud_rate),
-  serial_(io, port_),
-  imu_(csChannel, speed)
-{
-    serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
-    spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
-    mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
+ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
+ port_(port),
+ baud_rate_(baud_rate),
+ serial_(io, port_),
+ imu_(csChannel, speed)
+ {
+  serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
+  spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
+  mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
 
     // Init imu
-    std::cout << "IMU INIT" << std::endl;
-    std::cout << imu_.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
+  std::cout << "IMU INIT" << std::endl;
+  std::cout << imu_.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
 
-    usleep(100000);
+  usleep(100000);
   	//usleep(100000);
 
-  	std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
+  std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
 
-    //half second wait. Function breaks with 1 million
-  	usleep(500000);
+  //half second wait. Function breaks with 1 million
+  usleep(500000);
+  //usleep(500000);
+
+  std::cout << "accel scale = " << std::dec<< imu_.set_acc_scale(BITS_FS_16G) << std::endl;
+
+  usleep(100000);
+  usleep(500000);
+  	//usleep(500000);
+  	//usleep(500000);
+  	//usleep(500000);
   	//usleep(500000);
 
-  	std::cout << "accel scale = " << std::dec<< imu_.set_acc_scale(BITS_FS_16G) << std::endl;
-
-    usleep(100000);
-  	usleep(500000);
-  	//usleep(500000);
-  	//usleep(500000);
-  	//usleep(500000);
-  	//usleep(500000);
-
-    std::cout << "IMU INIT DONE" << std::endl;
+  std::cout << "IMU INIT DONE" << std::endl;
 }
 
 /**
@@ -81,10 +81,9 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
  * @param odom Odometry data
  * @param imu  IMU data
  */
-void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
-{
+ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
+ {
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
-
   // Load start byte
   do
   {
@@ -117,67 +116,74 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     //STD msg means the robot is telling us its current sensor values
     case std_msg_type:
     {
-        long2Bytes quads;
+      long2Bytes quads;
 
 	    //Read in left quads from 4 byte union
-        for (int i = 0; i < 4; i++)
-        {
-          quads.b[i] = msgData[i + 1];
-        }
-        const int32_t leftQuad = quads.l;
+      for (int i = 0; i < 4; i++)
+      {
+        quads.b[i] = msgData[i + 1];
+      }
+      const int32_t leftQuad = quads.l;
 
         //Read in right quads from 4 byte union
-        for (int i = 0; i < 4; i++)
-        {
-          quads.b[i] = msgData[i + 5];
-        }
-        const int32_t rightQuad = quads.l;
+      for (int i = 0; i < 4; i++)
+      {
+        quads.b[i] = msgData[i + 5];
+      }
+      const int32_t rightQuad = quads.l;
 
         // Twist
-        const int32_t rightDelta = (rightQuad - lastRightQuad),
-                      leftDelta = (leftQuad - lastLeftQuad);
+      const int32_t rightDelta = (rightQuad - lastRightQuad),
+      leftDelta = (leftQuad - lastLeftQuad);
 
-        lastRightQuad = rightQuad;
-        lastLeftQuad = leftQuad;
+      lastRightQuad = rightQuad;
+      lastLeftQuad = leftQuad;
 
-        const auto avg = (rightDelta - leftDelta) / 2.0;
+      const auto avg = (rightDelta + leftDelta) / 2.0,
+      dif = (rightDelta - leftDelta) / 2.0;
 
-        const auto dt = (ros::Time::now() - lastTime).toSec();
-		lastTime = ros::Time::now();
-
-        const float theta = quatToEuler(odom->pose.pose.orientation) + ((rightDelta - leftDelta) * dt);
-
-		const auto vx = rightDelta / dt,
-				   vy = leftDelta / dt,
-				   vtheta = theta / dt;
-
-		const auto dx = (vx * cos(theta) - vy * sin(theta)) * dt,
-				   dy = (vx * sin(theta) + vy * cos(theta)) * dt;
+      const auto dt = (ros::Time::now() - lastTime).toSec();
+      lastTime = ros::Time::now();
 
 
-        odom->twist.twist.linear.x = vx;
-        odom->twist.twist.linear.y = vy;
-        odom->twist.twist.linear.z = 0;
+      const auto dist = avg * straightConversion, //robots coordinate frame
+      dtheta = dif * thetaConversion;
 
-        odom->twist.twist.angular.x = 0;
-        odom->twist.twist.angular.y = 0;
-        odom->twist.twist.angular.z = vtheta;
+      const float theta = quatToEuler(odom->pose.pose.orientation) + dtheta; //accessing old odom in this way is a little weird. Why not have static global variables for xyt. Is odom 0 when constructed or how does the first case work
+
+
+      const auto dx = -sin(theta) * dist, //world coordinate frame
+      dy = cos(theta) * dist;
+
+      const auto vx = dx / dt,
+      vy = dy / dt,
+      vtheta = dtheta / dt;
+
+
+
+      odom->twist.twist.linear.x = vx;
+      odom->twist.twist.linear.y = vy;
+      odom->twist.twist.linear.z = 0;
+
+      odom->twist.twist.angular.x = 0;
+      odom->twist.twist.angular.y = 0;
+      odom->twist.twist.angular.z = vtheta;
 
         // odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
         // Pose
-        odom->pose.pose.position.x += dx;
-        odom->pose.pose.position.y += dy;
-        odom->pose.pose.position.z = 0;
+      odom->pose.pose.position.x += dx;
+      odom->pose.pose.position.y += dy;
+      odom->pose.pose.position.z = 0;
 
-        odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(theta);
+      odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(theta);
 
         // odom->pose.covariance = ODOM_POSE_COV_MAT;
 
         //ROS_INFO("quat: z: %1.2f, w: %1.2f", odom->pose.pose.orientation.z, odom->pose.pose.orientation.w);
         //ROS_INFO("pos x: %1.2f, pos y: %1.2f, theta: %1.2f", odom->pose.pose.position.x, odom->pose.pose.position.y, quatToEuler(odom->pose.pose.orientation));
 
-        break;
+      break;
     }
 
     //SPC msg means the robot wants to know whats behind it
@@ -227,18 +233,18 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
  * @param  quat Quaternion
  * @return  n   Euler angle (yaw)
  */
-inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
-{
+ inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
+ {
   return std::atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
-                         ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
+   ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
 }
 
 /**
  * Callback function for sending ekf position estimate to cortex
  * STD Msg
  */
-void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
-{
+ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
+ {
   const int msgLength = 3;
   boost::array<uint8_t, msgLength> out;
 
@@ -258,8 +264,8 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
  * Callback function for sending new object positions to cortex
  * MPC Msg
  */
-void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
-{
+ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
+ {
   //Only tell the robot to get more objects if it isn't busy
   if (didPickUpObjects)
   {
@@ -291,21 +297,21 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
  * @param  type Type of message
  * @return      Length of message
  */
-inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
-{
+ inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
+ {
   switch (type)
   {
     case std_msg_type:
-      return std_msg_length;
+    return std_msg_length;
 
     case spc_msg_type:
-      return spc_msg_length;
+    return spc_msg_length;
 
     case mpc_msg_type:
-      return mpc_msg_length;
+    return mpc_msg_length;
 
     default:
-      return 0;
+    return 0;
   }
 }
 
@@ -313,8 +319,8 @@ inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
  * Sends message header over UART
  * @param type Type of message
  */
-void robotPOS::sendMsgHeader(const uint8_t type)
-{
+ void robotPOS::sendMsgHeader(const uint8_t type)
+ {
   //Send start byte
   boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
 
@@ -332,8 +338,8 @@ void robotPOS::sendMsgHeader(const uint8_t type)
  * @param  count Message count
  * @return       If header is valid
  */
-inline const bool robotPOS::verifyMsgHeader(const uint8_t type, const uint8_t count)
-{
+ inline const bool robotPOS::verifyMsgHeader(const uint8_t type, const uint8_t count)
+ {
   if (type > 0 && type < 3)
   {
     if (isFirstMsg)
