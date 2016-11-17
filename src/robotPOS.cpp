@@ -110,6 +110,8 @@
   static int32_t lastRightQuad = 0, lastLeftQuad = 0;
   static ros::Time lastTime = ros::Time::now();
 
+  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = 0; //TODO: Find our starting position
+
   // Parse msg
   switch (flagHolders[1])
   {
@@ -149,8 +151,7 @@
       const auto dist = avg * straightConversion, //robots coordinate frame
       dtheta = dif * thetaConversion;
 
-      const float theta = quatToEuler(odom->pose.pose.orientation) + dtheta; //accessing old odom in this way is a little weird. Why not have static global variables for xyt. Is odom 0 when constructed or how does the first case work
-
+      const float theta = thetaGlobal + dtheta;
 
       const auto dx = -sin(theta) * dist, //world coordinate frame
       dy = cos(theta) * dist;
@@ -159,8 +160,6 @@
       vy = dy / dt,
       vtheta = dtheta / dt;
 
-
-
       odom->twist.twist.linear.x = vx;
       odom->twist.twist.linear.y = vy;
       odom->twist.twist.linear.z = 0;
@@ -168,12 +167,15 @@
       odom->twist.twist.angular.x = 0;
       odom->twist.twist.angular.y = 0;
       odom->twist.twist.angular.z = vtheta;
+      thetaGlobal += vtheta;
 
         // odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
         // Pose
       odom->pose.pose.position.x += dx;
+      xPosGlobal += dx;
       odom->pose.pose.position.y += dy;
+      yPosGlobal += dy;
       odom->pose.pose.position.z = 0;
 
       odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(theta);
