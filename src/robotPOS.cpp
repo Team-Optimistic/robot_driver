@@ -1,36 +1,36 @@
 /*********************************************************************
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2011, Eric Perko, Chad Rockey
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Case Western Reserve University nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *0
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *********************************************************************/
+* Software License Agreement (BSD License)
+*
+*  Copyright (c) 2011, Eric Perko, Chad Rockey
+*  All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions
+*  are met:
+*
+*   * Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*   * Redistributions in binary form must reproduce the above
+*     copyright notice, this list of conditions and the following
+*     disclaimer in the documentation and/or other materials provided
+*     with the distribution.
+*   * Neither the name of Case Western Reserve University nor the names of its
+*     contributors may be used to endorse or promote products derived
+*     from this software without specific prior written permission.
+*0
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+*  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+*  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+*  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+*  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+*  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+*  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+*  POSSIBILITY OF SUCH DAMAGE.
+*********************************************************************/
 
 #include <cmath>
 #include <geometry_msgs/Quaternion.h>
@@ -41,22 +41,22 @@
 
 #include "robot_driver/robotPOS.h"
 
- robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
- port_(port),
- baud_rate_(baud_rate),
- serial_(io, port_),
- imu_(csChannel, speed)
- {
+robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
+port_(port),
+baud_rate_(baud_rate),
+serial_(io, port_),
+imu_(csChannel, speed)
+{
   serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
   spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
 
-    // Init imu
+  // Init imu
   std::cout << "IMU INIT" << std::endl;
   std::cout << imu_.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
 
   usleep(100000);
-  	//usleep(100000);
+  //usleep(100000);
 
   std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
 
@@ -68,21 +68,21 @@
 
   usleep(100000);
   usleep(500000);
-  	//usleep(500000);
-  	//usleep(500000);
-  	//usleep(500000);
-  	//usleep(500000);
+  //usleep(500000);
+  //usleep(500000);
+  //usleep(500000);
+  //usleep(500000);
 
   std::cout << "IMU INIT DONE" << std::endl;
 }
 
 /**
- * Polls UART and sets its inputs to the latest data
- * @param odom Odometry data
- * @param imu  IMU data
- */
- void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
- {
+* Polls UART and sets its inputs to the latest data
+* @param odom Odometry data
+* @param imu  IMU data
+*/
+void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
+{
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
   // Load start byte
   do
@@ -120,21 +120,21 @@
     {
       long2Bytes quads;
 
-	    //Read in left quads from 4 byte union
+      //Read in left quads from 4 byte union
       for (int i = 0; i < 4; i++)
       {
         quads.b[i] = msgData[i + 1];
       }
       const int32_t leftQuad = quads.l;
 
-        //Read in right quads from 4 byte union
+      //Read in right quads from 4 byte union
       for (int i = 0; i < 4; i++)
       {
         quads.b[i] = msgData[i + 5];
       }
       const int32_t rightQuad = quads.l;
 
-        // Twist
+      // Twist
       const int32_t rightDelta = (rightQuad - lastRightQuad),
       leftDelta = (leftQuad - lastLeftQuad);
 
@@ -169,9 +169,9 @@
       odom->twist.twist.angular.z = vtheta;
       thetaGlobal += vtheta;
 
-        // odom->twist.covariance = ODOM_TWIST_COV_MAT;
+      // odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
-        // Pose
+      // Pose
       odom->pose.pose.position.x += dx;
       xPosGlobal += dx;
       odom->pose.pose.position.y += dy;
@@ -180,10 +180,10 @@
 
       odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(theta);
 
-        // odom->pose.covariance = ODOM_POSE_COV_MAT;
+      // odom->pose.covariance = ODOM_POSE_COV_MAT;
 
-        //ROS_INFO("quat: z: %1.2f, w: %1.2f", odom->pose.pose.orientation.z, odom->pose.pose.orientation.w);
-        //ROS_INFO("pos x: %1.2f, pos y: %1.2f, theta: %1.2f", odom->pose.pose.position.x, odom->pose.pose.position.y, quatToEuler(odom->pose.pose.orientation));
+      //ROS_INFO("quat: z: %1.2f, w: %1.2f", odom->pose.pose.orientation.z, odom->pose.pose.orientation.w);
+      //ROS_INFO("pos x: %1.2f, pos y: %1.2f, theta: %1.2f", odom->pose.pose.position.x, odom->pose.pose.position.y, quatToEuler(odom->pose.pose.orientation));
 
       break;
     }
@@ -231,22 +231,22 @@
 }
 
 /**
- * Converts a quaternion to an euler angle (yaw only)
- * @param  quat Quaternion
- * @return  n   Euler angle (yaw)
- */
- inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
- {
+* Converts a quaternion to an euler angle (yaw only)
+* @param  quat Quaternion
+* @return  n   Euler angle (yaw)
+*/
+inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
+{
   return std::atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
-   ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
+  ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
 }
 
 /**
- * Callback function for sending ekf position estimate to cortex
- * STD Msg
- */
- void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
- {
+* Callback function for sending ekf position estimate to cortex
+* STD Msg
+*/
+void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
+{
   const int msgLength = 3;
   boost::array<uint8_t, msgLength> out;
 
@@ -263,11 +263,11 @@
 }
 
 /**
- * Callback function for sending new object positions to cortex
- * MPC Msg
- */
- void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
- {
+* Callback function for sending new object positions to cortex
+* MPC Msg
+*/
+void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
+{
   //Only tell the robot to get more objects if it isn't busy
   if (didPickUpObjects)
   {
@@ -295,12 +295,12 @@
 }
 
 /**
- * Returns the length of a given type of message
- * @param  type Type of message
- * @return      Length of message
- */
- inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
- {
+* Returns the length of a given type of message
+* @param  type Type of message
+* @return      Length of message
+*/
+inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
+{
   switch (type)
   {
     case std_msg_type:
@@ -318,11 +318,11 @@
 }
 
 /**
- * Sends message header over UART
- * @param type Type of message
- */
- void robotPOS::sendMsgHeader(const uint8_t type)
- {
+* Sends message header over UART
+* @param type Type of message
+*/
+void robotPOS::sendMsgHeader(const uint8_t type)
+{
   //Send start byte
   boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
 
@@ -335,13 +335,13 @@
 }
 
 /**
- * Verifies a message header
- * @param  type  Message type
- * @param  count Message count
- * @return       If header is valid
- */
- inline const bool robotPOS::verifyMsgHeader(const uint8_t type, const uint8_t count)
- {
+* Verifies a message header
+* @param  type  Message type
+* @param  count Message count
+* @return       If header is valid
+*/
+inline const bool robotPOS::verifyMsgHeader(const uint8_t type, const uint8_t count)
+{
   if (type > 0 && type < 3)
   {
     if (isFirstMsg)
