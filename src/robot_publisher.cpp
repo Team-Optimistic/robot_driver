@@ -95,7 +95,7 @@ int main(int argc, char **argv)
       transform.setOrigin( tf::Vector3( 0.9144, 0.3048, xyz.z) ); //#starting location
 
       //transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
-      br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/neato_laser"));
+      br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/base_link"));
 
       odomPub.publish(odomOut);
       imuPub.publish(imuOut);
