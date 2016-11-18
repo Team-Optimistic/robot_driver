@@ -97,8 +97,8 @@ int main(int argc, char **argv)
       //transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/base_link"));
 
-      odomPub.publish(odomOut);
-      imuPub.publish(imuOut);
+     // odomPub.publish(odomOut);
+     // imuPub.publish(imuOut);
 
       ros::spinOnce();
     }
