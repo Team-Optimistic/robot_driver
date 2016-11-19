@@ -91,7 +91,7 @@ int main(int argc, char **argv)
       geometry_msgs::Point xyz = odomOut.pose.pose.position;
       geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
       //transform.setRotation( tf::Quaternion(direction.x, direction.y, direction.z, direction.w) );
-      transform.setRotation(tf::Quaternion(0,0,0,1));
+      transform.setRotation(tf::Quaternion(0.707,0,0,0.707));
       transform.setOrigin( tf::Vector3( 0.9144, 0.3048, xyz.z) ); //#starting location
 
       //transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
