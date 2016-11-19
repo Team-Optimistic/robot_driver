@@ -179,8 +179,8 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
                  dy = sin(theta) * dist;
 
       const auto vx = dx / dt,
-      vy = dy / dt,
-      vtheta = dtheta / dt;
+                 vy = dy / dt,
+                 vtheta = dtheta / dt;
 
       odom->twist.twist.linear.x = vx;
       odom->twist.twist.linear.y = vy;
@@ -188,19 +188,19 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       odom->twist.twist.angular.x = 0;
       odom->twist.twist.angular.y = 0;
-      odom->twist.twist.angular.z = vtheta;
       thetaGlobal += vtheta;
+      odom->twist.twist.angular.z = vtheta;
 
       // odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
       // Pose
-      odom->pose.pose.position.x += dx;
       xPosGlobal += dx;
-      odom->pose.pose.position.y += dy;
       yPosGlobal += dy;
+      odom->pose.pose.position.x = xPosGlobal;
+      odom->pose.pose.position.y = yPosGlobal;
       odom->pose.pose.position.z = 0;
 
-      odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(theta);
+      odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(thetaGlobal);
 
       // odom->pose.covariance = ODOM_POSE_COV_MAT;
 

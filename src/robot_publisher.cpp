@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     nav_msgs::Odometry odomOut;
     sensor_msgs::Imu imuOut;
 
-    odomOut.header.frame_id = "map";
+    odomOut.header.frame_id = "odom";
     odomOut.child_frame_id = "base_link";
 
     imuOut.header.frame_id = "base_link";
