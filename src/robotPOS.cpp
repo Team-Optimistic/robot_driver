@@ -76,8 +76,6 @@ imu_(csChannel, speed)
   //Sample imu to get bias
   std::cout << "IMU CALIBRATING" << std::endl;
 
-  ros::Time start = ros::Time::now(), end;
-
   const int imuSampleCount = 10000;
   for (int i = 0; i < imuSampleCount; i++)
   {
@@ -89,10 +87,11 @@ imu_(csChannel, speed)
   xAxisBias /= imuSampleCount;
   yAxisBias /= imuSampleCount;
   zRotAxisBias /= imuSampleCount;
-  
-  end = ros::Time::now();
 
-  std::cout << "IMU CALIBRATION DONE: TOOK " << (end - start).toSec() << std::endl;
+  std::cout << "IMU CALIBRATION DONE" <<
+               "\nxAxisBias: " << xAxisBias <<
+               "\nyAxisBias: " << yAxisBias <<
+               "\nzRotAxisBias: " << zRotAxisBias << std::endl;
 
   std::cout << "IMU INIT DONE" << std::endl;
 }
