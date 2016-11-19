@@ -158,29 +158,32 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       // Twist
       const int32_t rightDelta = (rightQuad - lastRightQuad),
-      leftDelta = (leftQuad - lastLeftQuad);
+                    leftDelta = (leftQuad - lastLeftQuad);
 
       lastRightQuad = rightQuad;
       lastLeftQuad = leftQuad;
 
-      const auto avg = (rightDelta + leftDelta) / 2.0,
-      dif = (rightDelta - leftDelta) / 2.0;
+      const float avg = (rightDelta + leftDelta) / 2.0,
+                  dif = (rightDelta - leftDelta) / 2.0;
 
       const auto dt = (ros::Time::now() - lastTime).toSec();
       lastTime = ros::Time::now();
 
-
-      const auto dist = avg * straightConversion, //robots coordinate frame
-      dtheta = dif * thetaConversion;
+      const float dist = (avg * straightConversion) / 1000.0, //robots coordinate frame
+                  dtheta = dif * thetaConversion;
+                  ROS_INFO("dif: %1.2f", dif);
+                  ROS_INFO("dtheta: %1.2f", dtheta);
 
       const float theta = thetaGlobal + dtheta;
 
-      const auto dx = cos(theta) * dist, //world coordinate frame
-                 dy = sin(theta) * dist;
+      const float dx = cos(theta) * dist, //world coordinate frame
+                  dy = sin(theta) * dist;
 
-      const auto vx = dx / dt,
-                 vy = dy / dt,
-                 vtheta = dtheta / dt;
+      const float vx = dx / dt,
+                  vy = dy / dt,
+                  vtheta = dtheta / dt;
+                  ROS_INFO("vtheta: %1.2f", vtheta);
+                  ROS_INFO("dt: %1.2f", dt);
 
       odom->twist.twist.linear.x = vx;
       odom->twist.twist.linear.y = vy;
@@ -188,6 +191,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       odom->twist.twist.angular.x = 0;
       odom->twist.twist.angular.y = 0;
+      ROS_INFO("thetaGlobal: %1.2f", thetaGlobal);
       thetaGlobal += vtheta;
       odom->twist.twist.angular.z = vtheta;
 
