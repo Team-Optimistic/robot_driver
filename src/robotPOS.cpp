@@ -79,19 +79,16 @@ imu_(csChannel, speed)
   const int imuSampleCount = 1000;
   for (int i = 0; i < imuSampleCount; i++)
   {
-    xAxisBias += imu_.read_acc(0);
-    yAxisBias += imu_.read_acc(1);
-    zRotAxisBias += imu_.read_rot(2);
+    channel0Bias += imu_.read_acc(0);
+    channel1Bias += imu_.read_acc(1);
+    channel2RotBias += imu_.read_rot(2);
   }
 
-  xAxisBias /= imuSampleCount;
-  yAxisBias /= imuSampleCount;
-  zRotAxisBias /= imuSampleCount;
+  channel0Bias /= imuSampleCount;
+  channel1Bias /= imuSampleCount;
+  channel2RotBias /= imuSampleCount;
 
-  std::cout << "IMU CALIBRATION DONE" <<
-               "\nxAxisBias: " << xAxisBias <<
-               "\nyAxisBias: " << yAxisBias <<
-               "\nzRotAxisBias: " << zRotAxisBias << std::endl;
+  std::cout << "IMU CALIBRATION DONE" << std::endl;
 
   std::cout << "IMU INIT DONE" << std::endl;
 }
@@ -243,15 +240,15 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
   // Fill imu message
   const float dpsToRps = 0.01745;
-  imu->angular_velocity.x = imu_.read_rot(0) * dpsToRps;
-  imu->angular_velocity.y = imu_.read_rot(1) * dpsToRps;
-  imu->angular_velocity.z = (imu_.read_rot(2) - zRotAxisBias) * dpsToRps;
+  imu->angular_velocity.x = 0; //imu_.read_rot(0) * dpsToRps;
+  imu->angular_velocity.y = 0; //imu_.read_rot(1) * dpsToRps;
+  imu->angular_velocity.z = (imu_.read_rot(2) - channel2RotBias) * dpsToRps;
   //imu->angular_velocity_covariance = emptyIMUCov;
 
   const float gravity = 9.80665;
-  imu->linear_acceleration.x = (imu_.read_acc(0) - xAxisBias) * gravity;
-  imu->linear_acceleration.y = (imu_.read_acc(1) - yAxisBias) * gravity;
-  imu->linear_acceleration.z = imu_.read_acc(2) * gravity;
+  imu->linear_acceleration.y = (imu_.read_acc(0) - channel0Bias) * gravity;
+  imu->linear_acceleration.x = (imu_.read_acc(1) - channel1Bias) * gravity;
+  imu->linear_acceleration.z =  gravity; //imu_.read_acc(2) * gravity;
   //imu->linear_acceleration_covariance = emptyIMUCov;
 }
 
