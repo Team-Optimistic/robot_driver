@@ -53,18 +53,18 @@ imu_(csChannel, speed)
 
   // Init imu
   std::cout << "IMU INIT" << std::endl;
-  std::cout << imu_.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
+  std::cout << imu_.init(1, BITS_DLPF_CFG_20HZ) << std::endl;
 
   usleep(100000);
   //usleep(100000);
 
-  std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
+  std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_500DPS) << std::endl;
 
   //half second wait. Function breaks with 1 million
   usleep(500000);
   //usleep(500000);
 
-  std::cout << "accel scale = " << std::dec<< imu_.set_acc_scale(BITS_FS_16G) << std::endl;
+  std::cout << "accel scale = " << std::dec<< imu_.set_acc_scale(BITS_FS_2G) << std::endl;
 
   usleep(100000);
   usleep(500000);
@@ -76,7 +76,9 @@ imu_(csChannel, speed)
   //Sample imu to get bias
   std::cout << "IMU CALIBRATING" << std::endl;
 
-  const int imuSampleCount = 1000;
+  ros::Time start = ros::Time::now(), end;
+
+  const int imuSampleCount = 10000;
   for (int i = 0; i < imuSampleCount; i++)
   {
     xAxisBias += imu_.read_acc(0);
@@ -87,8 +89,10 @@ imu_(csChannel, speed)
   xAxisBias /= imuSampleCount;
   yAxisBias /= imuSampleCount;
   zRotAxisBias /= imuSampleCount;
+  
+  end = ros::Time::now();
 
-  std::cout << "IMU CALIBRATION DONE" << std::endl;
+  std::cout << "IMU CALIBRATION DONE: TOOK " << (end - start).toSec() << std::endl;
 
   std::cout << "IMU INIT DONE" << std::endl;
 }
