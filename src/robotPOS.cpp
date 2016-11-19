@@ -53,18 +53,18 @@ imu_(csChannel, speed)
 
   // Init imu
   std::cout << "IMU INIT" << std::endl;
-  std::cout << imu_.init(1, BITS_DLPF_CFG_5HZ) << std::endl;
+  std::cout << imu_.init(1, BITS_DLPF_CFG_20HZ) << std::endl;
 
   usleep(100000);
   //usleep(100000);
 
-  std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_2000DPS) << std::endl;
+  std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_500DPS) << std::endl;
 
   //half second wait. Function breaks with 1 million
   usleep(500000);
   //usleep(500000);
 
-  std::cout << "accel scale = " << std::dec<< imu_.set_acc_scale(BITS_FS_16G) << std::endl;
+  std::cout << "accel scale = " << std::dec<< imu_.set_acc_scale(BITS_FS_2G) << std::endl;
 
   usleep(100000);
   usleep(500000);
@@ -88,7 +88,10 @@ imu_(csChannel, speed)
   yAxisBias /= imuSampleCount;
   zRotAxisBias /= imuSampleCount;
 
-  std::cout << "IMU CALIBRATION DONE" << std::endl;
+  std::cout << "IMU CALIBRATION DONE" <<
+               "\nxAxisBias: " << xAxisBias <<
+               "\nyAxisBias: " << yAxisBias <<
+               "\nzRotAxisBias: " << zRotAxisBias << std::endl;
 
   std::cout << "IMU INIT DONE" << std::endl;
 }

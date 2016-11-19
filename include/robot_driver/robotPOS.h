@@ -72,7 +72,7 @@ class robotPOS
     const float straightConversion = 0.1 , thetaConversion = 0.1;
 
     mpu6000 imu_;
-    float xAxisBias = 0, yAxisBias = 0, zRotAxisBias = 0;
+    double xAxisBias = 0, yAxisBias = 0, zRotAxisBias = 0;
 
     static const uint8_t std_msg_type = 1, spc_msg_type = 2, mpc_msg_type = 3;
 
