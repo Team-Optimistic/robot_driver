@@ -78,8 +78,24 @@ int main(int argc, char **argv)
 
     odomOut.header.frame_id = "odom";
     odomOut.child_frame_id = "base_link";
+    odom.twist.twist.linear.x = 0;
+    odom.twist.twist.linear.y = 0;
+    odom.twist.twist.linear.z = 0;
+    odom.twist.twist.angular.x = 0;
+    odom.twist.twist.angular.y = 0;
+    odom.twist.twist.angular.z = 0;
+    odom.pose.pose.position.x = 0;
+    odom.pose.pose.position.y = 0;
+    odom.pose.pose.position.z = 0;
+    odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(ROBOT_STARTING_THETA);
 
     imuOut.header.frame_id = "base_link";
+    imu.angular_velocity.x = 0;
+    imu.angular_velocity.y = 0;
+    imu.angular_velocity.z = 0;
+    imu.linear_acceleration.y = 0;
+    imu.linear_acceleration.x = 0;
+    imu.linear_acceleration.z = 0;
 
     while (ros::ok())
     {
@@ -90,11 +106,8 @@ int main(int argc, char **argv)
 
       geometry_msgs::Point xyz = odomOut.pose.pose.position;
       geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
-      //transform.setRotation( tf::Quaternion(direction.x, direction.y, direction.z, direction.w) );
-      transform.setRotation(tf::Quaternion(0.707,0,0,0.707));
-      transform.setOrigin( tf::Vector3( 0.9144, 0.3048, xyz.z) ); //#starting location
-
-      //transform.setOrigin( tf::Vector3(xyz.x, xyz.y, xyz.z) );
+      transform.setRotation(tf::Quaternion(0.707,0,0,0.707)); //starting angle
+      transform.setOrigin(tf::Vector3(0.9144, 0.3048, xyz.z)); //starting location
       br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/base_link"));
 
       odomPub.publish(odomOut);

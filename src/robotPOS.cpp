@@ -105,10 +105,19 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   const int start_index = 0, msg_type_index = 1, msg_count_index = 2;
 
   // Load start byte
+  int tempCounter = 10; //Only do 10 reads before exiting as to not block
   do
   {
     boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
-  } while (flagHolders[start_index] != 0xFA);
+    tempCounter--;
+  } while (flagHolders[start_index] != 0xFA && tempCounter > 0);
+
+  //If we exited because we tried too many times
+  if (tempCounter <= 0)
+  {
+    //Don't set the messages
+    return;
+  }
 
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
@@ -132,7 +141,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   static int32_t lastRightQuad = 0, lastLeftQuad = 0;
   static ros::Time lastTime = ros::Time::now();
 
-  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = 1.57079632679; //TODO: Find our starting position
+  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = ROBOT_STARTING_THETA;
 
   // Parse msg
   switch (flagHolders[1])
@@ -156,6 +165,9 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       }
       const int32_t rightQuad = quads.l;
 
+      //Read in dt
+      const int8_t dt = msgData[9];
+
       // Twist
       const int32_t rightDelta = (rightQuad - lastRightQuad),
                     leftDelta = (leftQuad - lastLeftQuad);
@@ -165,9 +177,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       const float avg = (rightDelta + leftDelta) / 2.0,
                   dif = (rightDelta - leftDelta) / 2.0;
-
-      const auto dt = (ros::Time::now() - lastTime).toSec();
-      lastTime = ros::Time::now();
 
       const float dist = (avg * straightConversion) / 1000.0, //robots coordinate frame
                   dtheta = dif * thetaConversion;

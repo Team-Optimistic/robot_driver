@@ -44,6 +44,8 @@
 
 #include "robot_driver/MPU6000.h"
 
+#define ROBOT_STARTING_THETA 1.57079632679
+
 class robotPOS
 {
   public:
@@ -77,7 +79,7 @@ class robotPOS
     static const uint8_t std_msg_type = 1, spc_msg_type = 2, mpc_msg_type = 3;
 
     //Lengths for recieved messages
-    static const uint8_t std_msg_length = 9, spc_msg_length = 3, mpc_msg_length = 3;
+    static const uint8_t std_msg_length = 10, spc_msg_length = 3, mpc_msg_length = 3;
 
     static const int msgType_Count = 3;
     const boost::array<uint8_t, msgType_Count> msgTypes = {{std_msg_type, spc_msg_type, mpc_msg_type}};
