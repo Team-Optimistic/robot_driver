@@ -84,19 +84,24 @@ imu_(csChannel, speed)
 void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
+
+  const int start_index = 0, msg_type_index = 1, msg_count_index = 2;
+
   // Load start byte
   do
   {
     boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
-  } while (flagHolders[0] != 0xFA);
+  } while (flagHolders[start_index] != 0xFA);
 
   // Load rest of header
-  boost::asio::read(serial_, boost::asio::buffer(&flagHolders[1], 2));
+  boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
 
   // Verify msg count
   if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
   {
-    std::cout << "Message count invalid (" << unsigned(flagHolders[2]) << ") for type " << unsigned(flagHolders[1]) << "." << std::endl;
+    std::cout << "Message count invalid (" << unsigned(flagHolders[msg_count_index])
+              << ") for type " << unsigned(flagHolders[msg_type_index]) << "."
+              << std::endl;
   }
 
   // Load msg

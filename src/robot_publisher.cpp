@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   //n.getParam("baud_rate", baud_rate);
   ROS_INFO("Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
   priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
-  
+
   boost::asio::io_service io;
   tf::Transform transform;
 
