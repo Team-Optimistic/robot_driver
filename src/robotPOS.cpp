@@ -135,7 +135,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   static int32_t lastRightQuad = 0, lastLeftQuad = 0;
   static ros::Time lastTime = ros::Time::now();
 
-  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = 90; //TODO: Find our starting position
+  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = 1.57079632679; //TODO: Find our starting position
 
   // Parse msg
   switch (flagHolders[1])
