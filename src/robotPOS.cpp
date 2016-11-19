@@ -76,7 +76,7 @@ imu_(csChannel, speed)
   //Sample imu to get bias
   std::cout << "IMU CALIBRATING" << std::endl;
 
-  const int imuSampleCount = 10000;
+  const int imuSampleCount = 1000;
   for (int i = 0; i < imuSampleCount; i++)
   {
     xAxisBias += imu_.read_acc(0);
