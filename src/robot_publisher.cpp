@@ -78,24 +78,24 @@ int main(int argc, char **argv)
 
     odomOut.header.frame_id = "odom";
     odomOut.child_frame_id = "base_link";
-    odom.twist.twist.linear.x = 0;
-    odom.twist.twist.linear.y = 0;
-    odom.twist.twist.linear.z = 0;
-    odom.twist.twist.angular.x = 0;
-    odom.twist.twist.angular.y = 0;
-    odom.twist.twist.angular.z = 0;
-    odom.pose.pose.position.x = 0;
-    odom.pose.pose.position.y = 0;
-    odom.pose.pose.position.z = 0;
-    odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(ROBOT_STARTING_THETA);
+    odomOut.twist.twist.linear.x = 0;
+    odomOut.twist.twist.linear.y = 0;
+    odomOut.twist.twist.linear.z = 0;
+    odomOut.twist.twist.angular.x = 0;
+    odomOut.twist.twist.angular.y = 0;
+    odomOut.twist.twist.angular.z = 0;
+    odomOut.pose.pose.position.x = 0;
+    odomOut.pose.pose.position.y = 0;
+    odomOut.pose.pose.position.z = 0;
+    odomOut.pose.pose.orientation = tf::createQuaternionMsgFromYaw(ROBOT_STARTING_THETA);
 
     imuOut.header.frame_id = "base_link";
-    imu.angular_velocity.x = 0;
-    imu.angular_velocity.y = 0;
-    imu.angular_velocity.z = 0;
-    imu.linear_acceleration.y = 0;
-    imu.linear_acceleration.x = 0;
-    imu.linear_acceleration.z = 0;
+    imuOut.angular_velocity.x = 0;
+    imuOut.angular_velocity.y = 0;
+    imuOut.angular_velocity.z = 0;
+    imuOut.linear_acceleration.y = 0;
+    imuOut.linear_acceleration.x = 0;
+    imuOut.linear_acceleration.z = 0;
 
     while (ros::ok())
     {
