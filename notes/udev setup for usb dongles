@@ -8,3 +8,5 @@ serial=0002
 
 SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="0001", SYMLINK+="lidarUSB"
 SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="0002", SYMLINK+="cortexUSB"
+
+write to file /etc/udev/rules.d/99-usb-serial.rules
