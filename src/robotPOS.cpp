@@ -38,6 +38,7 @@
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <iostream>
 #include <tf/transform_broadcaster.h>
+#include <boost/asio/serial_port.hpp>
 
 #include "robot_driver/robotPOS.h"
 
@@ -103,6 +104,13 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
 
   const int start_index = 0, msg_type_index = 1, msg_count_index = 2;
+
+  //TODO: Move to constructor
+  static boost::asio::io_service io;
+  static boost::asio::serial_port port(io);
+  port.open(port_);
+  port.set_option(boost::asio::serial_port_base::baud_rate(115200));
+  blocking_reader reader(port, 500);
 
   // Load start byte
   int tempCounter = 10; //Only do 10 reads before exiting as to not block
