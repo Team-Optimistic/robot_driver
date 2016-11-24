@@ -50,6 +50,11 @@ serial_(io, port_),
 imu_(csChannel, speed)
 {
   serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
+
+  s_port.open(port_);
+  s_port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
+  reader(s_port, 50);
+
   spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
 
@@ -106,13 +111,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
   const int start_index = 0, msg_type_index = 1, msg_count_index = 2;
 
-  //TODO: Move to constructor
-  static boost::asio::io_service io;
-  static boost::asio::serial_port port(io);
-  port.open(port_);
-  port.set_option(boost::asio::serial_port_base::baud_rate(115200));
-  blockingReader reader(port, 500);
-
   char c = 0;
   while (reader.readNext(c) && c != 0xFA) {}
 
@@ -125,23 +123,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   {
   	flagHolders[0] = c;
   }
-  
-/*
-  // Load start byte
-  int tempCounter = 10; //Only do 10 reads before exiting as to not block
-  do
-  {
-    boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
-    tempCounter--;
-  } while (flagHolders[start_index] != 0xFA && tempCounter > 0);
-
-  //If we exited because we tried too many times
-  if (tempCounter <= 0)
-  {
-    //Don't set the messages
-    return;
-  }
-*/
 
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));

@@ -69,12 +69,17 @@ class robotPOS
      */
     void mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in);
   private:
-    std::string port_; ///< @brief The serial port the driver is attached to
-    uint32_t baud_rate_; ///< @brief The baud rate for the serial connection
+    std::string port_; //serial port
+    uint32_t baud_rate_; //serial baud rate
+    boost::asio::io_service io; //io service for serial port
+    boost::asio::serial_port s_port; //serial port in io service
+    blockingReader reader; //async serial port reader
+
+    //odom math
     const float straightConversion = 0.72038464762, thetaConversion = 0.002741907; //0.0283616003
 
     mpu6000 imu_;
-    double channel0Bias = 0, channel1Bias = 0, channel2RotBias = 0;
+    double channel0Bias = 0, channel1Bias = 0, channel2RotBias = 0; //imu constant offsets measured at init time
 
     static const uint8_t std_msg_type = 1, spc_msg_type = 2, mpc_msg_type = 3;
 
