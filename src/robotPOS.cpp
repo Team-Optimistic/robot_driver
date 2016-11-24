@@ -200,7 +200,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       odom->twist.twist.angular.x = 0;
       odom->twist.twist.angular.y = 0;
-      thetaGlobal += vtheta;
+      thetaGlobal += dtheta;
       odom->twist.twist.angular.z = vtheta;
 
       // odom->twist.covariance = ODOM_TWIST_COV_MAT;
