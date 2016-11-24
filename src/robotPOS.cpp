@@ -106,19 +106,10 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   const int start_index = 0, msg_type_index = 1, msg_count_index = 2;
 
   // Load start byte
-  int tempCounter = 10; //Only do 10 reads before exiting as to not block
   do
   {
     boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
-    tempCounter--;
-  } while (flagHolders[start_index] != 0xFA && tempCounter > 0);
-
-  //If we exited because we tried too many times
-  if (tempCounter <= 0)
-  {
-    //Don't set the messages
-    return;
-  }
+  } while (flagHolders[start_index] != 0xFA);
 
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
