@@ -71,9 +71,6 @@ class robotPOS
   private:
     std::string port_; //serial port
     uint32_t baud_rate_; //serial baud rate
-    boost::asio::io_service io; //io service for serial port
-    boost::asio::serial_port s_port; //serial port in io service
-    blockingReader reader; //async serial port reader
 
     //odom math
     const float straightConversion = 0.72038464762, thetaConversion = 0.002741907; //0.0283616003
