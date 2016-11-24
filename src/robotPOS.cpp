@@ -116,7 +116,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   if (tempCounter <= 0)
   {
     //Don't set the messages
-    ROS_INFO("gave up reading");
     return;
   }
 
@@ -180,8 +179,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       const float dist = (avg * straightConversion) / 1000.0, //robots coordinate frame
                   dtheta = dif * thetaConversion;
-                  ROS_INFO("dif: %1.2f", dif);
-                  ROS_INFO("dtheta: %1.2f", dtheta);
 
       const float theta = thetaGlobal + dtheta;
 
@@ -191,8 +188,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       const float vx = dx / dt,
                   vy = dy / dt,
                   vtheta = dtheta / dt;
-                  ROS_INFO("vtheta: %1.2f", vtheta);
-                  ROS_INFO("dt: %d", dt);
 
       odom->twist.twist.linear.x = vx;
       odom->twist.twist.linear.y = vy;
