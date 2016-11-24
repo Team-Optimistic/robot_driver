@@ -116,6 +116,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   if (tempCounter <= 0)
   {
     //Don't set the messages
+    ROS_INFO("gave up reading");
     return;
   }
 
@@ -139,7 +140,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   boost::asio::read(serial_, boost::asio::buffer(msgData));
 
   static int32_t lastRightQuad = 0, lastLeftQuad = 0;
-  static ros::Time lastTime = ros::Time::now();
 
   static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = ROBOT_STARTING_THETA;
 
@@ -192,7 +192,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
                   vy = dy / dt,
                   vtheta = dtheta / dt;
                   ROS_INFO("vtheta: %1.2f", vtheta);
-                  ROS_INFO("dt: %1.2f", dt);
+                  ROS_INFO("dt: %d", dt);
 
       odom->twist.twist.linear.x = vx;
       odom->twist.twist.linear.y = vy;
@@ -200,7 +200,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       odom->twist.twist.angular.x = 0;
       odom->twist.twist.angular.y = 0;
-      ROS_INFO("thetaGlobal: %1.2f", thetaGlobal);
       thetaGlobal += vtheta;
       odom->twist.twist.angular.z = vtheta;
 
