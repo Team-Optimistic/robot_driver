@@ -84,6 +84,7 @@ add_executable(robot_driver
 	src/robot_publisher.cpp
 	src/robotPOS.cpp
 	src/MPU6000.cpp
+	src/blockingReader.cpp
 )
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

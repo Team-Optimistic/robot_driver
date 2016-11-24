@@ -1,5 +1,6 @@
 #include <boost/asio.hpp>
 #include <boost/asio/serial_port.hpp>
+#include <boost/bind.hpp>
 
 class blockingReader
 {
@@ -10,7 +11,7 @@ public:
    timer(port.get_io_service()),
    read_error(true) {}
 
-  const bool readNext(int8_t& val);
+  const bool readNext(char& val);
 private:
   boost::asio::serial_port& port;
   size_t timeout;

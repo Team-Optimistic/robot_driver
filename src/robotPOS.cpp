@@ -40,6 +40,7 @@
 #include <tf/transform_broadcaster.h>
 #include <boost/asio/serial_port.hpp>
 
+#include "robot_driver/blockingReader.h"
 #include "robot_driver/robotPOS.h"
 
 robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
@@ -110,8 +111,22 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   static boost::asio::serial_port port(io);
   port.open(port_);
   port.set_option(boost::asio::serial_port_base::baud_rate(115200));
-  blocking_reader reader(port, 500);
+  blockingReader reader(port, 500);
 
+  char c = 0;
+  while (reader.readNext(c) && c != 0xFA) {}
+
+  if (c == 0)
+  {
+  	//Reader must have timed out
+  	return;
+  }
+  else
+  {
+  	flagHolders[0] = c;
+  }
+  
+/*
   // Load start byte
   int tempCounter = 10; //Only do 10 reads before exiting as to not block
   do
@@ -126,6 +141,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     //Don't set the messages
     return;
   }
+*/
 
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
