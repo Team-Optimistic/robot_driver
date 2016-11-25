@@ -41,6 +41,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/PointCloud.h>
+#include <std_msgs/UInt16.h>
 
 #include "robot_driver/MPU6000.h"
 
@@ -72,7 +73,7 @@ class robotPOS
     /**
      * Callback function for lidar rpm
      */
-    void lidarRPM_callback(const std_msgs::Uint16::ConstPtr& in);
+    void lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in);
   private:
     std::string port_; //serial port
     uint32_t baud_rate_; //serial baud rate

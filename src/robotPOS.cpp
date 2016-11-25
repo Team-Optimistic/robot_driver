@@ -311,9 +311,9 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
   }
 }
 
-void lidarRPM_callback(const std_msgs::Uint16::ConstPtr& in)
+void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
 {
-  currentLidarRPM = *in;
+  currentLidarRPM = unsigned(in->data);
 }
 
 /**
