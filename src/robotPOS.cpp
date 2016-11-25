@@ -38,6 +38,7 @@
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <iostream>
 #include <tf/transform_broadcaster.h>
+#include <ros/ros.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -53,29 +54,23 @@ imu_(csChannel, speed)
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
 
   // Init imu
-  std::cout << "IMU INIT" << std::endl;
-  std::cout << imu_.init(1, BITS_DLPF_CFG_20HZ) << std::endl;
+  ROS_INFO("IMU INIT\n");
+  
+  imu_.init(1, BITS_DLPF_CFG_20HZ);
 
   usleep(100000);
-  //usleep(100000);
 
-  std::cout << "gyro scale = " << std::dec<< imu_.set_gyro_scale(BITS_FS_500DPS) << std::endl;
+  ROS_INFO("gyro scale = %d", imu_.set_gyro_scale(BITS_FS_500DPS));
 
-  //half second wait. Function breaks with 1 million
   usleep(500000);
-  //usleep(500000);
 
-  std::cout << "accel scale = " << std::dec<< imu_.set_acc_scale(BITS_FS_2G) << std::endl;
+  ROS_INFO("accel scale = %d", imu_.set_acc_scale(BITS_FS_2G));
 
   usleep(100000);
   usleep(500000);
-  //usleep(500000);
-  //usleep(500000);
-  //usleep(500000);
-  //usleep(500000);
 
   //Sample imu to get bias
-  std::cout << "IMU CALIBRATING" << std::endl;
+  ROS_INFO("IMU CALIBRATING");
 
   const int imuSampleCount = 1000;
   for (int i = 0; i < imuSampleCount; i++)
@@ -89,9 +84,9 @@ imu_(csChannel, speed)
   channel1Bias /= imuSampleCount;
   channel2RotBias /= imuSampleCount;
 
-  std::cout << "IMU CALIBRATION DONE" << std::endl;
-
-  std::cout << "IMU INIT DONE" << std::endl;
+  ROS_INFO("IMU CALIBRATION DONE");
+  
+  ROS_INFO("IMU INIT DONE");
 }
 
 /**
@@ -117,9 +112,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   // Verify msg count
   if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
   {
-    std::cout << "Message count invalid (" << unsigned(flagHolders[msg_count_index])
-              << ") for type " << unsigned(flagHolders[msg_type_index]) << "."
-              << std::endl;
+    ROS_INFO("Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
   }
 
   // Load msg

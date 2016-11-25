@@ -8,12 +8,12 @@
     <rosparam command="load" file="../params/ekf_template.yaml" />
   </node>
 
-  <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true">
+  <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true" output="screen">
   </node>
 
   <node pkg="motion_path_creator" type="motion_path_creator" name="motion_path_creator" clear_params="true">
   </node>
-  <node pkg="tf" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 0 0 -0.707 -0.707 base_link neato_laser 50" />
+  <node pkg="tf" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 -0.5 -0.5 0.5 -0.5 base_link neato_laser 50" />
   <!--
     <node pkg="goat_lidar_merging" type="goat_lidar_merging" name="goat_lidar_merging" clear_params="true">
     </node>
