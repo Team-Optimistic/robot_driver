@@ -68,6 +68,11 @@ class robotPOS
      * Callback function for sending new object positions to cortex
      */
     void mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in);
+
+    /**
+     * Callback function for lidar rpm
+     */
+    void lidarRPM_callback(const std_msgs::Uint16::ConstPtr& in);
   private:
     std::string port_; //serial port
     uint32_t baud_rate_; //serial baud rate
@@ -118,6 +123,9 @@ class robotPOS
 
     ros::NodeHandle n;
     ros::Publisher spcPub, mpcPub;
+    ros::Subscriber lidarRPMSub;
+
+    int currentLidarRPM = 250;
 
     //Next objects to pick up
     sensor_msgs::PointCloud cloud;

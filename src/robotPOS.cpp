@@ -52,10 +52,11 @@ imu_(csChannel, speed)
 
   spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
+  lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar_rpm", 10, &robotPOS::lidarRPM_callback, this);
 
   // Init imu
   ROS_INFO("IMU INIT\n");
-  
+
   imu_.init(1, BITS_DLPF_CFG_20HZ);
 
   usleep(100000);
@@ -85,7 +86,7 @@ imu_(csChannel, speed)
   channel2RotBias /= imuSampleCount;
 
   ROS_INFO("IMU CALIBRATION DONE");
-  
+
   ROS_INFO("IMU INIT DONE");
 }
 
@@ -261,13 +262,15 @@ inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) 
 */
 void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 {
-  const int msgLength = 3;
+  const int msgLength = 4;
   boost::array<uint8_t, msgLength> out;
 
   out[0] = in->pose.pose.position.x;
   out[1] = in->pose.pose.position.y;
   const geometry_msgs::Quaternion quat = in->pose.pose.orientation;
   out[2] = quatToEuler(quat);
+  out[3] = currentLidarRPM;
+  currentLidarRPM = 0;
 
   //Send header
   sendMsgHeader(std_msg_type);
@@ -306,6 +309,11 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
     //Set flag
     didPickUpObjects = false;
   }
+}
+
+void lidarRPM_callback(const std_msgs::Uint16::ConstPtr& in)
+{
+  currentLidarRPM = *in;
 }
 
 /**
