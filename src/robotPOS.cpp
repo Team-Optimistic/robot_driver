@@ -349,6 +349,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
       out[7 + (i * 9)] = conv.b[3];
 
       out[8 + (i * 9)] = cloud.points[i].z;
+      ROS_INFO("pushing type %d", (int)cloud.points[i].z);
     }
 
     //Send header
