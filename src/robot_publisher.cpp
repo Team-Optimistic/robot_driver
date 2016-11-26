@@ -104,11 +104,11 @@ int main(int argc, char **argv)
 
       robot.poll(&odomOut, &imuOut);
 
-      geometry_msgs::Point xyz = odomOut.pose.pose.position;
-      geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
-      transform.setRotation(tf::Quaternion(0.707,0,0,0.707)); //starting angle
-      transform.setOrigin(tf::Vector3(0.9144, 0.3048, xyz.z)); //starting location
-      br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/base_link"));
+      // geometry_msgs::Point xyz = odomOut.pose.pose.position;
+      // geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
+      // transform.setRotation(tf::Quaternion(0.707,0,0,0.707)); //starting angle
+      // transform.setOrigin(tf::Vector3(0.9144, 0.3048, xyz.z)); //starting location
+      // br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/base_link"));
 
       odomPub.publish(odomOut);
       imuPub.publish(imuOut);
