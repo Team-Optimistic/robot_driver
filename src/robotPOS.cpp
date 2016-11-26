@@ -39,6 +39,7 @@
 #include <iostream>
 #include <tf/transform_broadcaster.h>
 #include <ros/ros.h>
+#include <tf/transform_datatypes.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -250,8 +251,11 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 */
 inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
 {
-  return std::atan2((2 * ((quat.x * quat.w) + (quat.y * quat.z))),
-  ((quat.x * quat.x) + (quat.y * quat.y) - (quat.z * quat.z) - (quat.w * quat.w)));
+  tf::Quaternion q(quat.x, quat.y, quat.z, quat.w);
+  tf::Matrix3x3 m(q);
+  double roll, pitch, yaw;
+  m.getRPY(roll, pitch, yaw);
+  return yaw;
 }
 
 /**
@@ -310,19 +314,39 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
     std::vector<int8_t> out(msgLength);
     for (int i = 0; i < 4; i++)
     {
-      conv.l = cloud.points[i].x * 1000 + 1;
+      if (!std::isfinite(cloud.points[i].x))
+      {
+        cloud.points[i].x = 0;
+      }
+
+      conv.l = cloud.points[i].x * 1000;
+      
+      if (!std::isfinite(conv.l))
+      {
+        conv.l = 0;
+      }
+      
       out[0 + (i * 9)] = conv.b[0];
       out[1 + (i * 9)] = conv.b[1];
       out[2 + (i * 9)] = conv.b[2];
       out[3 + (i * 9)] = conv.b[3];
-      ROS_INFO("sent x: %d", conv.l);
 
-      conv.l = cloud.points[i].y * 1000 - 1;
+      if (!std::isfinite(cloud.points[i].y))
+      {
+        cloud.points[i].y = 0;
+      }
+
+      conv.l = cloud.points[i].y * 1000;
+      
+      if (!std::isfinite(conv.l))
+      {
+        conv.l = 0;
+      }
+      
       out[4 + (i * 9)] = conv.b[0];
       out[5 + (i * 9)] = conv.b[1];
       out[6 + (i * 9)] = conv.b[2];
       out[7 + (i * 9)] = conv.b[3];
-      ROS_INFO("sent y: %d", conv.l);
 
       out[8 + (i * 9)] = cloud.points[i].z;
     }
