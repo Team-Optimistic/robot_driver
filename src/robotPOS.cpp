@@ -52,6 +52,7 @@ imu_(csChannel, speed)
 
   spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
+  ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, this);
   lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar_rpm", 10, &robotPOS::lidarRPM_callback, this);
 
   // Init imu
@@ -259,14 +260,28 @@ inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) 
 */
 void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 {
-  const int msgLength = 4;
-  boost::array<uint8_t, msgLength> out;
+  const int msgLength = 10;
+  boost::array<int8_t, msgLength> out;
 
-  out[0] = in->pose.pose.position.x * 1000;
-  out[1] = in->pose.pose.position.y * 1000;
+  union long2Bytes { int32_t l; int8_t b[4]; };
+  long2Bytes conv;
+
+  conv.l = (int)(in->pose.pose.position.x * 1000);
+  out[0] = conv.b[0];
+  out[1] = conv.b[1];
+  out[2] = conv.b[2];
+  out[3] = conv.b[3];
+
+  conv.l = (int)(in->pose.pose.position.y * 1000);
+  out[4] = conv.b[0];
+  out[5] = conv.b[1];
+  out[6] = conv.b[2];
+  out[7] = conv.b[3];
+
   const geometry_msgs::Quaternion quat = in->pose.pose.orientation;
-  out[2] = quatToEuler(quat);
-  out[3] = currentLidarRPM;
+  out[8] = quatToEuler(quat);
+
+  out[9] = (int)(currentLidarRPM / 2);
   currentLidarRPM = 0;
 
   //Send header
@@ -287,13 +302,22 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
   {
     sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
 
-    const int msgLength = 12;
+    const int msgLength = 20;
 
-    std::vector<uint8_t> out(msgLength);
+    union bits2Bytes { int16_t l; int8_t b[2]; };
+    bits2Bytes conv;
+
+    std::vector<int8_t> out(msgLength);
     for (int i = 0; i < 4; i++)
     {
-      out.push_back(cloud.points[i].x);
-      out.push_back(cloud.points[i].y);
+      conv.l = cloud.points[i].x * 1000;
+      out.push_back(conv.b[0]);
+      out.push_back(conv.b[1]);
+
+      conv.l = cloud.points[i].y * 1000;
+      out.push_back(conv.b[0]);
+      out.push_back(conv.b[1]);
+
       out.push_back(cloud.points[i].z);
     }
 
