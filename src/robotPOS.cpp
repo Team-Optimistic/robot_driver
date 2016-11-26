@@ -273,7 +273,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 
   tf::Stamped<geometry_msgs::Pose> fromPose(in->pose.pose, in->pose.header.stamp, "odom"), toPose(in->pose.pose, in->pose.header.stamp, "field");
   tf::TransformListener listener();
-  listener.waitForTransform("odom", "field", ros::Time::Now(), ros::Duration(3.0));
+  listener.waitForTransform("odom", "field", in->pose.header.stamp, ros::Duration(3.0));
   tf::transformPose("field", fromPose, toPose);
 
   conv.l = (int)(toPose.position.x * 1000);
