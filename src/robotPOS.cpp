@@ -265,8 +265,8 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   const int msgLength = 4;
   boost::array<uint8_t, msgLength> out;
 
-  out[0] = in->pose.pose.position.x;
-  out[1] = in->pose.pose.position.y;
+  out[0] = in->pose.pose.position.x * 1000;
+  out[1] = in->pose.pose.position.y * 1000;
   const geometry_msgs::Quaternion quat = in->pose.pose.orientation;
   out[2] = quatToEuler(quat);
   out[3] = currentLidarRPM;
