@@ -40,7 +40,8 @@
 #include <tf/transform_broadcaster.h>
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
-#include <tf.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -271,10 +272,10 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   union long2Bytes { int32_t l; int8_t b[4]; };
   long2Bytes conv;
 
-  tf::Stamped<geometry_msgs::Pose> fromPose(in->pose.pose, in->pose.header.stamp, "odom"), toPose(in->pose.pose, in->pose.header.stamp, "field");
-  tf::TransformListener listener();
-  listener.waitForTransform("odom", "field", in->pose.header.stamp, ros::Duration(3.0));
-  tf::transformPose("field", fromPose, toPose);
+  tf::Stamped<geometry_msgs::Pose> fromPose(in->pose.pose, in->header.stamp, "odom"), toPose(in->pose.pose, in->header.stamp, "field");
+  tf::TransformListener listener;
+  listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
+ // listener.transformPose("field", fromPose, toPose);
 
   conv.l = (int)(toPose.position.x * 1000);
   out[0] = conv.b[0];
