@@ -302,23 +302,29 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
   {
     sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
 
-    const int msgLength = 20;
+    const int msgLength = 36;
 
-    union bits2Bytes { int16_t l; int8_t b[2]; };
-    bits2Bytes conv;
+    union long2Bytes { int32_t l; int8_t b[4]; };
+    long2Bytes conv;
 
     std::vector<int8_t> out(msgLength);
     for (int i = 0; i < 4; i++)
     {
-      conv.l = cloud.points[i].x * 1000;
-      out.push_back(conv.b[0]);
-      out.push_back(conv.b[1]);
+      conv.l = cloud.points[i].x * 1000 + 1;
+      out[0 + (i * 9)] = conv.b[0];
+      out[1 + (i * 9)] = conv.b[1];
+      out[2 + (i * 9)] = conv.b[2];
+      out[3 + (i * 9)] = conv.b[3];
+      ROS_INFO("sent x: %d", conv.l);
 
-      conv.l = cloud.points[i].y * 1000;
-      out.push_back(conv.b[0]);
-      out.push_back(conv.b[1]);
+      conv.l = cloud.points[i].y * 1000 - 1;
+      out[4 + (i * 9)] = conv.b[0];
+      out[5 + (i * 9)] = conv.b[1];
+      out[6 + (i * 9)] = conv.b[2];
+      out[7 + (i * 9)] = conv.b[3];
+      ROS_INFO("sent y: %d", conv.l);
 
-      out.push_back(cloud.points[i].z);
+      out[8 + (i * 9)] = cloud.points[i].z;
     }
 
     //Send header

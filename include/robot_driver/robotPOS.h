@@ -132,7 +132,7 @@ class robotPOS
     sensor_msgs::PointCloud cloud;
 
     //Whether the robot has picked up the last objects we sent it
-    bool didPickUpObjects = false;
+    bool didPickUpObjects = true;
 
     //Starting flag for sending a message to the cortex
     const boost::array<uint8_t, 1> startFlag  = {{0xFA}};
