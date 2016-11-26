@@ -16,6 +16,9 @@
 
   <node pkg="tf" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 -0.5 -0.5 0.5 -0.5 base_link neato_laser 50" />
 
+  <node pkg="tf" type="static_transform_publisher" name="field_odom_broadcaster" args="0.9144 0.3048 0 1.5707963 0 0 field odom 5" />
+
+
   <!--
     <node pkg="goat_lidar_merging" type="goat_lidar_merging" name="goat_lidar_merging" clear_params="true">
     </node>

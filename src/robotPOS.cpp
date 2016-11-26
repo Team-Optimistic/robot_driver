@@ -40,6 +40,7 @@
 #include <tf/transform_broadcaster.h>
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
+#include <tf.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -270,13 +271,18 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   union long2Bytes { int32_t l; int8_t b[4]; };
   long2Bytes conv;
 
-  conv.l = (int)(in->pose.pose.position.x * 1000);
+  tf::Stamped<geometry_msgs::Pose> fromPose(in->pose.pose, in->pose.header.stamp, "odom"), toPose(in->pose.pose, in->pose.header.stamp, "field");
+  tf::TransformListener listener();
+  listener.waitForTransform("odom", "field", in->pose.header.stamp, ros::Duration(3.0));
+  tf::transformPose("field", fromPose, toPose);
+
+  conv.l = (int)(toPose.position.x * 1000);
   out[0] = conv.b[0];
   out[1] = conv.b[1];
   out[2] = conv.b[2];
   out[3] = conv.b[3];
 
-  conv.l = (int)(in->pose.pose.position.y * 1000);
+  conv.l = (int)(toPose.position.y * 1000);
   out[4] = conv.b[0];
   out[5] = conv.b[1];
   out[6] = conv.b[2];
@@ -320,12 +326,12 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
       }
 
       conv.l = cloud.points[i].x * 1000;
-      
+
       if (!std::isfinite(conv.l))
       {
         conv.l = 0;
       }
-      
+
       out[0 + (i * 9)] = conv.b[0];
       out[1 + (i * 9)] = conv.b[1];
       out[2 + (i * 9)] = conv.b[2];
@@ -337,12 +343,12 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
       }
 
       conv.l = cloud.points[i].y * 1000;
-      
+
       if (!std::isfinite(conv.l))
       {
         conv.l = 0;
       }
-      
+
       out[4 + (i * 9)] = conv.b[0];
       out[5 + (i * 9)] = conv.b[1];
       out[6 + (i * 9)] = conv.b[2];
