@@ -126,7 +126,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
   static int32_t lastRightQuad = 0, lastLeftQuad = 0;
 
-  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = ROBOT_STARTING_THETA;
+  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = 0;//ROBOT_STARTING_THETA;
 
   // Parse msg
   switch (flagHolders[1])
@@ -239,7 +239,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   //imu->angular_velocity_covariance = emptyIMUCov;
 
   const float gravity = 9.80665;
-  imu->linear_acceleration.y = (imu_.read_acc(0) - channel0Bias) * gravity;
+  imu->linear_acceleration.y = -1 * ((imu_.read_acc(0) - channel0Bias) * gravity);
   imu->linear_acceleration.x = (imu_.read_acc(1) - channel1Bias) * gravity;
   imu->linear_acceleration.z =  gravity; //imu_.read_acc(2) * gravity;
   //imu->linear_acceleration_covariance = emptyIMUCov;
