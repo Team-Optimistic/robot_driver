@@ -126,7 +126,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
   static int32_t lastRightQuad = 0, lastLeftQuad = 0;
 
-  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = ROBOT_STARTING_THETA;
+  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = 0;//ROBOT_STARTING_THETA;
 
   // Parse msg
   switch (flagHolders[1])
@@ -184,7 +184,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       thetaGlobal += dtheta;
       odom->twist.twist.angular.z = vtheta;
 
-      // odom->twist.covariance = ODOM_TWIST_COV_MAT;
+      odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
       // Pose
       xPosGlobal += dx;
@@ -195,10 +195,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(thetaGlobal);
 
-      // odom->pose.covariance = ODOM_POSE_COV_MAT;
-
-      //ROS_INFO("quat: z: %1.2f, w: %1.2f", odom->pose.pose.orientation.z, odom->pose.pose.orientation.w);
-      //ROS_INFO("pos x: %1.2f, pos y: %1.2f, theta: %1.2f", odom->pose.pose.position.x, odom->pose.pose.position.y, quatToEuler(odom->pose.pose.orientation));
+      odom->pose.covariance = ODOM_POSE_COV_MAT;
 
       break;
     }
@@ -236,13 +233,13 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   imu->angular_velocity.x = 0; //imu_.read_rot(0) * dpsToRps;
   imu->angular_velocity.y = 0; //imu_.read_rot(1) * dpsToRps;
   imu->angular_velocity.z = (imu_.read_rot(2) - channel2RotBias) * dpsToRps;
-  //imu->angular_velocity_covariance = emptyIMUCov;
+  imu->angular_velocity_covariance = emptyIMUCov;
 
   const float gravity = 9.80665;
-  imu->linear_acceleration.y = (imu_.read_acc(0) - channel0Bias) * gravity;
+  imu->linear_acceleration.y = -1 * ((imu_.read_acc(0) - channel0Bias) * gravity);
   imu->linear_acceleration.x = (imu_.read_acc(1) - channel1Bias) * gravity;
   imu->linear_acceleration.z =  gravity; //imu_.read_acc(2) * gravity;
-  //imu->linear_acceleration_covariance = emptyIMUCov;
+  imu->linear_acceleration_covariance = emptyIMUCov;
 }
 
 /**
@@ -292,8 +289,8 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 
     const int msgLength = 12;
 
-    std::vector<uint8_t> out(4);
-    for (int i = 0; i < out.size(); i++)
+    std::vector<uint8_t> out(msgLength);
+    for (int i = 0; i < 4; i++)
     {
       out.push_back(cloud.points[i].x);
       out.push_back(cloud.points[i].y);
