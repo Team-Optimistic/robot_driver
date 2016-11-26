@@ -289,8 +289,8 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 
     const int msgLength = 12;
 
-    std::vector<uint8_t> out(4);
-    for (int i = 0; i < out.size(); i++)
+    std::vector<uint8_t> out(msgLength);
+    for (int i = 0; i < 4; i++)
     {
       out.push_back(cloud.points[i].x);
       out.push_back(cloud.points[i].y);
