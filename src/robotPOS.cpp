@@ -282,7 +282,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 
   try
   {
-    pose_odom.header = ros::Time(0);
+    pose_odom.header.stamp = ros::Time(0);
     listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
     listener.transformPose("field", pose_odom, pose_field);
   }
