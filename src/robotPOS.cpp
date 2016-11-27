@@ -271,13 +271,33 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 
   union long2Bytes { int32_t l; int8_t b[4]; };
   long2Bytes conv;
+
   geometry_msgs::PoseStamped pose_odom;
   geometry_msgs::PoseStamped pose_field;
   pose_odom.pose = in->pose.pose;
   pose_odom.header = in->header;
+
   tf::TransformListener listener;
-  listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
-  listener.transformPose("field", pose_odom, pose_field);
+  try
+  {
+    listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
+    listener.transformPose("field", pose_odom, pose_field);
+  }
+  catch (const tf2::ExtrapolationException& e)
+  {
+    ROS_INFO("Need to see the past");
+    return;
+  }
+  catch (const tf2::ConnectivityException& e)
+  {
+    ROS_INFO("Need more data for transform");
+    return;
+  }
+  catch (const tf2::LookupException& e)
+  {
+    ROS_INFO("Can't find frame");
+    return;
+  }
 
   conv.l = (int)(pose_field.pose.position.x * 1000);
   out[0] = conv.b[0];
