@@ -274,24 +274,24 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   geometry_msgs::PoseStamped pose_odom;
   geometry_msgs::PoseStamped pose_field;
   pose_odom.pose = in->pose.pose;
-  pose.header = in->header;
+  pose_odom.header = in->header;
   tf::TransformListener listener;
   listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
   listener.transformPose("field", pose_odom, pose_field);
 
-  conv.l = (int)(toPose.position.x * 1000);
+  conv.l = (int)(pose_field.pose.position.x * 1000);
   out[0] = conv.b[0];
   out[1] = conv.b[1];
   out[2] = conv.b[2];
   out[3] = conv.b[3];
 
-  conv.l = (int)(toPose.position.y * 1000);
+  conv.l = (int)(pose_field.pose.position.y * 1000);
   out[4] = conv.b[0];
   out[5] = conv.b[1];
   out[6] = conv.b[2];
   out[7] = conv.b[3];
 
-  const geometry_msgs::Quaternion quat = in->pose.pose.orientation;
+  const geometry_msgs::Quaternion quat = pose_field.pose.orientation;
   out[8] = quatToEuler(quat);
 
   out[9] = (int)(currentLidarRPM / 2);
