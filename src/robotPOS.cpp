@@ -272,12 +272,14 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   union long2Bytes { int32_t l; int8_t b[4]; };
   long2Bytes conv;
 
+  static tf::TransformListener listener;
+
   geometry_msgs::PoseStamped pose_odom;
   geometry_msgs::PoseStamped pose_field;
   pose_odom.pose = in->pose.pose;
   pose_odom.header = in->header;
+  ROS_INFO("diff: %1.2f", ros::Time::now().toSec() - pose_odom.header.stamp.toSec());
 
-  tf::TransformListener listener;
   try
   {
     listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
