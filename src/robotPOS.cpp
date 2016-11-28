@@ -234,13 +234,13 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   }
 
   // Fill imu message
-  const float dpsToRps = 0.01745;
+  constexpr float dpsToRps = 0.01745;
   imu->angular_velocity.x = 0; //imu_.read_rot(0) * dpsToRps;
   imu->angular_velocity.y = 0; //imu_.read_rot(1) * dpsToRps;
   imu->angular_velocity.z = (imu_.read_rot(2) - channel2RotBias) * dpsToRps;
   imu->angular_velocity_covariance = emptyIMUCov;
 
-  const float gravity = 9.80665;
+  constexpr float gravity = 9.80665;
   imu->linear_acceleration.y = -1 * ((imu_.read_acc(0) - channel0Bias) * gravity);
   imu->linear_acceleration.x = (imu_.read_acc(1) - channel1Bias) * gravity;
   imu->linear_acceleration.z =  gravity; //imu_.read_acc(2) * gravity;
@@ -339,7 +339,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
   {
     sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
 
-    const int msgLength = 36;
+    constexpr int msgLength = 36;
 
     union long2Bytes { int32_t l; int8_t b[4]; };
     long2Bytes conv;
