@@ -278,12 +278,12 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   geometry_msgs::PoseStamped pose_field;
   pose_odom.pose = in->pose.pose;
   pose_odom.header = in->header;
-  ROS_INFO("diff: %1.2f", ros::Time::now().toSec() - pose_odom.header.stamp.toSec());
+ // ROS_INFO("diff: %1.2f", ros::Time::now().toSec() - pose_odom.header.stamp.toSec());
 
   try
   {
     pose_odom.header.stamp = ros::Time(0);
-    listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
+   // listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
     listener.transformPose("field", pose_odom, pose_field);
   }
   catch (const tf2::ExtrapolationException& e)
