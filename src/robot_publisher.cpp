@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   //n.getParam("port", port);
   priv_nh.param("baud_rate", baud_rate, 115200);
   //n.getParam("baud_rate", baud_rate);
-  ROS_INFO("Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
+  ROS_INFO("robot_driver: Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
   priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
 
   boost::asio::io_service io;
