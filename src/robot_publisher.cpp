@@ -68,10 +68,6 @@ int main(int argc, char **argv)
   try
   {
     robotPOS robot(port, baud_rate, io, 0, 500000);
-    ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
-    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
-    ros::Subscriber ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, &robot),
-    mpcSub = n.subscribe<sensor_msgs::PointCloud2>("nextObjects", 1000, &robotPOS::mpc_callback, &robot);
 
     nav_msgs::Odometry odomOut;
     sensor_msgs::Imu imuOut;
@@ -104,12 +100,6 @@ int main(int argc, char **argv)
 
       robot.poll(&odomOut, &imuOut);
 
-      // geometry_msgs::Point xyz = odomOut.pose.pose.position;
-      // geometry_msgs::Quaternion direction = odomOut.pose.pose.orientation;
-      // transform.setRotation(tf::Quaternion(0.707,0,0,0.707)); //starting angle
-      // transform.setOrigin(tf::Vector3(0.9144, 0.3048, xyz.z)); //starting location
-      // br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/base_link"));
-
       odomPub.publish(odomOut);
       imuPub.publish(imuOut);
 
@@ -120,7 +110,7 @@ int main(int argc, char **argv)
   }
   catch (boost::system::system_error ex)
   {
-    ROS_ERROR("Error instantiating robot object. Are you sure you have the correct port and baud rate? Error was: %s", ex.what());
+    ROS_ERROR("robot_driver: Error instantiating robot object. Are you sure you have the correct port and baud rate? Error was: %s", ex.what());
     return -1;
   }
 }
