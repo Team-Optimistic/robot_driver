@@ -124,7 +124,7 @@ class robotPOS
 
     ros::NodeHandle n;
     ros::Publisher spcPub, mpcPub;
-    ros::Subscriber ekfSub, lidarRPMSub;
+    ros::Subscriber ekfSub, mpcSub, lidarRPMSub;
 
     int currentLidarRPM = 250;
 
