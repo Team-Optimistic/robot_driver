@@ -42,6 +42,9 @@
 #include <tf/transform_datatypes.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
+#include <std_msgs/String.h>
+#include <string>
+#include <sstream>
 
 #include "robot_driver/robotPOS.h"
 
@@ -55,6 +58,7 @@ imu_(csChannel, speed)
 
   spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
+  cortexPub = n.advertise<std_msgs::String>("cortexMsgs", 1000);
   ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, this);
   mpcSub = n.subscribe<sensor_msgs::PointCloud2>("nextObjects", 1000, &robotPOS::mpc_callback, this);
   lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar_rpm", 10, &robotPOS::lidarRPM_callback, this);
@@ -129,9 +133,19 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   std::vector<int8_t> msgData(getMsgLengthForType(flagHolders[1]));
   boost::asio::read(serial_, boost::asio::buffer(msgData));
 
+  std_msgs::String msgOut;
+  std::ostringstream stringStream;
+  stringStream << "type: " << unsigned(flagHolders[msg_type_index]) << ", count: " << unsigned(flagHolders[msg_count_index]) << ", data: ";
+  for (int i = 0; i < getMsgLengthForType(flagHolders[msg_type_index]); i++)
+  {
+    stringStream << unsigned(msgData[i]) << " ";
+  }
+  msgOut.data = stringStream.str();
+  cortexPub.publish(msgOut);
+
   static int32_t lastRightQuad = 0, lastLeftQuad = 0;
 
-  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = 0;//ROBOT_STARTING_THETA;
+  static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = 0;//ROBOT_STARTING_THETA; //Might need to be 3pi/2 for skills because the robot faces south
 
   // Parse msg
   switch (flagHolders[1])
@@ -279,7 +293,6 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   geometry_msgs::PoseStamped pose_field;
   pose_odom.pose = in->pose.pose;
   pose_odom.header = in->header;
-  ROS_INFO("robot_driver: diff: %1.2f", ros::Time::now().toSec() - pose_odom.header.stamp.toSec());
 
   try
   {
@@ -399,6 +412,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
 {
   currentLidarRPM = unsigned(in->data);
+  ROS_INFO("lidar RPM: %d", currentLidarRPM);
 }
 
 /**
