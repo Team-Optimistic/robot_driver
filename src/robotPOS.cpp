@@ -78,7 +78,7 @@ imu_(csChannel, speed)
   //Sample imu to get bias
   ROS_INFO("robot_driver: IMU CALIBRATING");
 
-  const int imuSampleCount = 1000;
+  constexpr int imuSampleCount = 1000;
   for (int i = 0; i < imuSampleCount; i++)
   {
     channel0Bias += imu_.read_acc(0);
@@ -90,8 +90,11 @@ imu_(csChannel, speed)
   channel1Bias /= imuSampleCount;
   channel2RotBias /= imuSampleCount;
 
-  ROS_INFO("robot_driver: IMU CALIBRATION DONE");
+  ROS_INFO("robot_driver: Channel 0 Bias: %lf", channel0Bias);
+  ROS_INFO("robot_driver: Channel 1 Bias: %lf", channel1Bias);
+  ROS_INFO("robot_driver: Channel 2 Bias: %lf", channel2Bias);
 
+  ROS_INFO("robot_driver: IMU CALIBRATION DONE");
   ROS_INFO("robot_driver: IMU INIT DONE");
 }
 
