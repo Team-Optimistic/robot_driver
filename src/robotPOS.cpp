@@ -92,7 +92,7 @@ imu_(csChannel, speed)
 
   ROS_INFO("Channel 0 Bias: %lf", channel0Bias);
   ROS_INFO("Channel 1 Bias: %lf", channel1Bias);
-  ROS_INFO("Channel 2 Bias: %lf", channel2Bias);
+  ROS_INFO("Channel 2 Rot Bias: %lf", channel2RotBias);
 
   ROS_INFO("IMU CALIBRATION DONE");
   ROS_INFO("IMU INIT DONE");
