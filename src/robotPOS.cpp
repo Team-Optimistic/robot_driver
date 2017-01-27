@@ -60,23 +60,23 @@ imu_(csChannel, speed)
   lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar_rpm", 10, &robotPOS::lidarRPM_callback, this);
 
   // Init imu
-  ROS_INFO("robot_driver: IMU INIT\n");
+  ROS_INFO("IMU INIT\n");
 
   imu_.init(1, BITS_DLPF_CFG_20HZ);
 
   usleep(100000);
 
-  ROS_INFO("robot_driver: gyro scale = %d", imu_.set_gyro_scale(BITS_FS_500DPS));
+  ROS_INFO("gyro scale = %d", imu_.set_gyro_scale(BITS_FS_500DPS));
 
   usleep(500000);
 
-  ROS_INFO("robot_driver: accel scale = %d", imu_.set_acc_scale(BITS_FS_2G));
+  ROS_INFO("accel scale = %d", imu_.set_acc_scale(BITS_FS_2G));
 
   usleep(100000);
   usleep(500000);
 
   //Sample imu to get bias
-  ROS_INFO("robot_driver: IMU CALIBRATING");
+  ROS_INFO("IMU CALIBRATING");
 
   constexpr int imuSampleCount = 1000;
   for (int i = 0; i < imuSampleCount; i++)
@@ -90,12 +90,12 @@ imu_(csChannel, speed)
   channel1Bias /= imuSampleCount;
   channel2RotBias /= imuSampleCount;
 
-  ROS_INFO("robot_driver: Channel 0 Bias: %lf", channel0Bias);
-  ROS_INFO("robot_driver: Channel 1 Bias: %lf", channel1Bias);
-  ROS_INFO("robot_driver: Channel 2 Bias: %lf", channel2Bias);
+  ROS_INFO("Channel 0 Bias: %lf", channel0Bias);
+  ROS_INFO("Channel 1 Bias: %lf", channel1Bias);
+  ROS_INFO("Channel 2 Bias: %lf", channel2Bias);
 
-  ROS_INFO("robot_driver: IMU CALIBRATION DONE");
-  ROS_INFO("robot_driver: IMU INIT DONE");
+  ROS_INFO("IMU CALIBRATION DONE");
+  ROS_INFO("IMU INIT DONE");
 }
 
 /**
@@ -121,7 +121,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   // Verify msg count
   if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
   {
-    ROS_INFO("robot_driver: Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
+    ROS_INFO("Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
   }
 
   // Load msg
@@ -282,7 +282,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   geometry_msgs::PoseStamped pose_field;
   pose_odom.pose = in->pose.pose;
   pose_odom.header = in->header;
-  ROS_INFO("robot_driver: diff: %1.2f", ros::Time::now().toSec() - pose_odom.header.stamp.toSec());
+  ROS_INFO("diff: %1.2f", ros::Time::now().toSec() - pose_odom.header.stamp.toSec());
 
   try
   {
@@ -292,17 +292,17 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   }
   catch (const tf2::ExtrapolationException& e)
   {
-    ROS_INFO("robot_driver: Need to see the past");
+    ROS_INFO("Need to see the past");
     return;
   }
   catch (const tf2::ConnectivityException& e)
   {
-    ROS_INFO("robot_driver: Need more data for transform");
+    ROS_INFO("Need more data for transform");
     return;
   }
   catch (const tf2::LookupException& e)
   {
-    ROS_INFO("robot_driver: Can't find frame");
+    ROS_INFO("Can't find frame");
     return;
   }
 
@@ -385,7 +385,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
       out[7 + (i * 9)] = conv.b[3];
 
       out[8 + (i * 9)] = cloud.points[i].z;
-      ROS_INFO("robot_driver: pushing type %d", (int)cloud.points[i].z);
+      ROS_INFO("pushing type %d", (int)cloud.points[i].z);
     }
 
     //Send header
