@@ -121,7 +121,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   // Verify msg count
   if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
   {
-    ROS_INFO("Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
+    //ROS_INFO("Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
   }
 
   // Load msg
@@ -282,7 +282,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   geometry_msgs::PoseStamped pose_field;
   pose_odom.pose = in->pose.pose;
   pose_odom.header = in->header;
-  ROS_INFO("diff: %1.2f", ros::Time::now().toSec() - pose_odom.header.stamp.toSec());
+  //ROS_INFO("time diff: %1.2f", ros::Time::now().toSec() - pose_odom.header.stamp.toSec());
 
   try
   {
@@ -292,17 +292,17 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   }
   catch (const tf2::ExtrapolationException& e)
   {
-    ROS_INFO("Need to see the past");
+    ROS_INFO("ekf_callback: Need to see the past");
     return;
   }
   catch (const tf2::ConnectivityException& e)
   {
-    ROS_INFO("Need more data for transform");
+    ROS_INFO("ekf_callback: Need more data for transform");
     return;
   }
   catch (const tf2::LookupException& e)
   {
-    ROS_INFO("Can't find frame");
+    ROS_INFO("ekf_callback: Can't find frame");
     return;
   }
 
@@ -385,7 +385,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
       out[7 + (i * 9)] = conv.b[3];
 
       out[8 + (i * 9)] = cloud.points[i].z;
-      ROS_INFO("pushing type %d", (int)cloud.points[i].z);
+      ROS_INFO("mpc_callback: pushing type %d", (int)cloud.points[i].z);
     }
 
     //Send header
