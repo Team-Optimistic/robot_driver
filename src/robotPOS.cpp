@@ -42,6 +42,7 @@
 #include <tf/transform_datatypes.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
+#include <wiringSerial.h>
 
 #include "robot_driver/robotPOS.h"
 
@@ -105,21 +106,26 @@ imu_(csChannel, speed)
 */
 void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
+	static const int cortexHandle = serialOpen("/dev/ttyAMA0", 115200);
+
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
 
-  const int start_index = 0, msg_type_index = 1, msg_count_index = 2;
+  constexpr int start_index = 0, msg_type_index = 1, msg_count_index = 2;
 
   // Load start byte
   do
   {
-    boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
+    //boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
+    flagHolders[start_index] = serialGetchar(cortexHandle);
   } while (flagHolders[start_index] != 0xFA);
 
   // Load rest of header
-  boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
+  //boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
+  flagHolders[msg_type_index] = serialGetchar(cortexHandle);
+  flagHolders[msg_count_index] = serialGetchar(cortexHandle);
 
   // Verify msg count
-  if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
+  if (!verifyMsgHeader(flagHolders[msg_type_index], flagHolders[msg_count_index]))
   {
     ROS_INFO("Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
   }
@@ -129,15 +135,21 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   union long2Bytes { int32_t l; int8_t b[4]; };
 
   //Init data vector with size of message
-  std::vector<int8_t> msgData(getMsgLengthForType(flagHolders[1]));
-  boost::asio::read(serial_, boost::asio::buffer(msgData));
+  //std::vector<int8_t> msgData(getMsgLengthForType(flagHolders[msg_type_index]));
+  //boost::asio::read(serial_, boost::asio::buffer(msgData));
+  const uint8_t msgLength = getMsgLengthForType(flagHolders[msg_type_index]);
+  std::vector<int8_t> msgData(msgLength);
+  for (int i = 0; i < msgLength; i++)
+  {
+  	msgData[i] = serialGetchar(cortexHandle);
+  }
 
   static int32_t lastRightQuad = 0, lastLeftQuad = 0;
 
   static float xPosGlobal = 0, yPosGlobal = 0, thetaGlobal = 0;//ROBOT_STARTING_THETA;
 
   // Parse msg
-  switch (flagHolders[1])
+  switch (flagHolders[msg_type_index])
   {
     //STD msg means the robot is telling us its current sensor values
     case std_msg_type:
