@@ -54,6 +54,10 @@ robotPOS::robotPOS(int csChannel, long speed):
 	{
 		ROS_INFO("-----------------------------------\nCOULD NOT OPEN SERIAL WITH CORTEX\n-----------------------------------\n");
 	}
+	else
+	{
+		ROS_INFO("Serial with cortex open");
+	}
 
   spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
@@ -139,6 +143,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   {
   	msgData[i] = serialGetchar(cortexHandle);
   }
+  ROS_INFO("Got msg of length: %d", msgLength);
 
   //Publish raw bytes for the record
   std_msgs::String cortexOut;
@@ -439,16 +444,17 @@ inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
   switch (type)
   {
     case std_msg_type:
-    return std_msg_length;
+    	return std_msg_length;
 
     case spc_msg_type:
-    return spc_msg_length;
+    	return spc_msg_length;
 
     case mpc_msg_type:
-    return mpc_msg_length;
+    	return mpc_msg_length;
 
     default:
-    return 0;
+    	ROS_INFO("Got bad msg type: %d", unsigned(type));
+    	return 0;
   }
 }
 
