@@ -50,7 +50,7 @@
 class robotPOS
 {
   public:
-    robotPOS(const std::string& port, uint32_t baud_rate, boost::asio::io_service& io, int csChannel, long speed);
+    robotPOS(int csChannel, long speed);
 
     ~robotPOS() {};
 
@@ -75,8 +75,7 @@ class robotPOS
      */
     void lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in);
   private:
-    std::string port_; //serial port
-    uint32_t baud_rate_; //serial baud rate
+    int cortexHandle; // UART port for the Cortex
 
     //odom math
     const float straightConversion = 0.72038464762, thetaConversion = 0.002741907; //0.0283616003
@@ -93,8 +92,6 @@ class robotPOS
     const boost::array<uint8_t, msgType_Count> msgTypes = {{std_msg_type, spc_msg_type, mpc_msg_type}};
     bool isFirstMsg = true;
     boost::array<uint8_t, msgType_Count> msgCounts = {{0, 0, 0}};
-
-    boost::asio::serial_port serial_; // UART port for the Cortex
 
     ros::Time prevTime; //previous time of last poll
 

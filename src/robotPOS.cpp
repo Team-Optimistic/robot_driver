@@ -47,13 +47,13 @@
 
 #include "robot_driver/robotPOS.h"
 
-robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
-port_(port),
-baud_rate_(baud_rate),
-serial_(io, port_),
-imu_(csChannel, speed)
+robotPOS::robotPOS(int csChannel, long speed):
+	imu_(csChannel, speed)
 {
-  serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
+	if ((cortexHandle = serialOpen("/dev/serial0", 115200)) == -1)
+	{
+		ROS_INFO("-----------------------------------\nCOULD NOT OPEN SERIAL WITH CORTEX\n-----------------------------------\n");
+	}
 
   spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
@@ -108,8 +108,6 @@ imu_(csChannel, speed)
 */
 void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
-	static const int cortexHandle = serialOpen("/dev/ttyAMA0", 115200);
-
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
 
   constexpr int start_index = 0, msg_type_index = 1, msg_count_index = 2;
@@ -117,12 +115,10 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   // Load start byte
   do
   {
-    //boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
     flagHolders[start_index] = serialGetchar(cortexHandle);
   } while (flagHolders[start_index] != 0xFA);
 
   // Load rest of header
-  //boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
   flagHolders[msg_type_index] = serialGetchar(cortexHandle);
   flagHolders[msg_count_index] = serialGetchar(cortexHandle);
 
@@ -137,8 +133,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   union long2Bytes { int32_t l; int8_t b[4]; };
 
   //Init data vector with size of message
-  //std::vector<int8_t> msgData(getMsgLengthForType(flagHolders[msg_type_index]));
-  //boost::asio::read(serial_, boost::asio::buffer(msgData));
   const uint8_t msgLength = getMsgLengthForType(flagHolders[msg_type_index]);
   std::vector<int8_t> msgData(msgLength);
   for (int i = 0; i < msgLength; i++)
@@ -353,7 +347,10 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   sendMsgHeader(std_msg_type);
 
   //Send data
-  boost::asio::write(serial_,  boost::asio::buffer(&out[0], msgLength));
+  for (int i = 0; i < msgLength; i++)
+  {
+  	serialPutchar(cortexHandle, out[i]);
+  }
 }
 
 /**
@@ -417,7 +414,10 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
     sendMsgHeader(mpc_msg_type);
 
     //Send data
-    boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
+    for (int i = 0; i < msgLength; i++)
+    {
+    	serialPutchar(cortexHandle, out[i]);
+    }
 
     //Set flag
     didPickUpObjects = false;
@@ -459,14 +459,14 @@ inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
 void robotPOS::sendMsgHeader(const uint8_t type)
 {
   //Send start byte
-  boost::asio::write(serial_, boost::asio::buffer(&startFlag[0], 1));
+  serialPutchar(cortexHandle, startFlag[0]);
 
   //Send type byte
-  boost::asio::write(serial_, boost::asio::buffer(&msgTypes[type - 1], 1));
+  serialPutchar(cortexHandle, msgTypes[type - 1]);
 
   //Send count
   msgCounts[type - 1] = msgCounts[type - 1] + 1 >= 255 ? 0 : msgCounts[type - 1] + 1;
-  boost::asio::write(serial_, boost::asio::buffer(&msgCounts[type - 1], 1));
+  serialPutchar(cortexHandle, msgCounts[type - 1]);
 }
 
 /**

@@ -51,23 +51,15 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::NodeHandle priv_nh("~");
   tf::TransformBroadcaster br;
-  std::string port;
-  int baud_rate;
   std::string frame_id;
 
-  priv_nh.param("port", port, std::string("/dev/cortexUSB"));
-  //n.getParam("port", port);
-  priv_nh.param("baud_rate", baud_rate, 115200);
-  //n.getParam("baud_rate", baud_rate);
-  ROS_INFO("Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
   priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
 
-  boost::asio::io_service io;
   tf::Transform transform;
 
   try
   {
-    robotPOS robot(port, baud_rate, io, 0, 500000);
+    robotPOS robot(0, 500000);
 
     ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
                    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
