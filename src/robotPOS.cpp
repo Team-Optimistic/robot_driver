@@ -35,6 +35,7 @@
 #include <cmath>
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Empty.h>
+#include <std_msgs/String.h>
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <iostream>
 #include <tf/transform_broadcaster.h>
@@ -55,6 +56,7 @@ imu_(csChannel, speed)
 
   spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
+  cortexPub = n.advertise<std_msgs::String>("cortexPub", 1000);
   ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, this);
   mpcSub = n.subscribe<sensor_msgs::PointCloud2>("nextObjects", 1000, &robotPOS::mpc_callback, this);
   lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar_rpm", 10, &robotPOS::lidarRPM_callback, this);
@@ -131,6 +133,17 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   //Init data vector with size of message
   std::vector<int8_t> msgData(getMsgLengthForType(flagHolders[1]));
   boost::asio::read(serial_, boost::asio::buffer(msgData));
+
+  //Publish raw bytes for the record
+  std_msgs::String cortexOut;
+  std::stringstream ss;
+  ss << "cortex data in: ";
+  for (auto&& data : msgData)
+  {
+  	ss << unsigned(data) << ",";
+  }
+  ss >> cortexOut.data;
+  cortexPub.publish(cortexOut);
 
   static int32_t lastRightQuad = 0, lastLeftQuad = 0;
 
