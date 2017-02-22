@@ -320,13 +320,13 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
     return;
   }
 
-  conv.l = (int)(pose_field.pose.position.x * 1000);
+  conv.l = (int32_t)(pose_field.pose.position.x * 1000);
   out[0] = conv.b[0];
   out[1] = conv.b[1];
   out[2] = conv.b[2];
   out[3] = conv.b[3];
 
-  conv.l = (int)(pose_field.pose.position.y * 1000);
+  conv.l = (int32_t)(pose_field.pose.position.y * 1000);
   out[4] = conv.b[0];
   out[5] = conv.b[1];
   out[6] = conv.b[2];
