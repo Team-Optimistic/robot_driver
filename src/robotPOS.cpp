@@ -128,19 +128,20 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
   // Load msg
   //Union for converting 4 bytes of a long from RobotC into a int32_t
-  union long2Bytes { int32_t l; int8_t b[4]; };
+  union long2Bytes { int32_t l; uint8_t b[4]; };
 
   //Init data vector with size of message
-  std::vector<int8_t> msgData(getMsgLengthForType(flagHolders[1]));
+  std::vector<uint8_t> msgData(getMsgLengthForType(flagHolders[1]));
   boost::asio::read(serial_, boost::asio::buffer(msgData));
 
   //Publish raw bytes for the record
   std_msgs::String cortexOut;
   std::stringstream ss;
   ss << "cortex data in: ";
-  for (auto&& data : msgData)
+  for (uint8_t data : msgData)
   {
   	ss << unsigned(data) << ",";
+  	ROS_INFO("data: %d", unsigned(data));
   }
   ss >> cortexOut.data;
   cortexPub.publish(cortexOut);
@@ -284,9 +285,9 @@ inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) 
 void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 {
   const int msgLength = 10;
-  boost::array<int8_t, msgLength> out;
+  boost::array<uint8_t, msgLength> out;
 
-  union long2Bytes { int32_t l; int8_t b[4]; };
+  union long2Bytes { int32_t l; uint8_t b[4]; };
   long2Bytes conv;
 
   static tf::TransformListener listener;
@@ -300,7 +301,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   try
   {
     pose_odom.header.stamp = ros::Time(0);
-   // listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
+    //listener.waitForTransform("odom", "field", in->header.stamp, ros::Duration(3.0));
     listener.transformPose("field", pose_odom, pose_field);
   }
   catch (const tf2::ExtrapolationException& e)
@@ -427,16 +428,17 @@ inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
   switch (type)
   {
     case std_msg_type:
-    return std_msg_length;
+    	return std_msg_length;
 
     case spc_msg_type:
-    return spc_msg_length;
+    	return spc_msg_length;
 
     case mpc_msg_type:
-    return mpc_msg_length;
+    	return mpc_msg_length;
 
     default:
-    return 0;
+    	ROS_INFO("Got bad msg type: %d", unsigned(type));
+    	return 0;
   }
 }
 
