@@ -8,17 +8,16 @@
     <rosparam command="load" file="/home/goat/catkin_ws/src/robot_driver/params/ekf_template.yaml"/>
   </node>
 
-  <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true" output="screen">
-  </node>
+  <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true" output="screen" />
 
-  <node pkg="motion_path_creator" type="motion_path_creator" name="motion_path_creator" clear_params="true" output="screen">
-  </node>
+  <node pkg="motion_path_creator" type="motion_path_creator" name="motion_path_creator" clear_params="true" output="screen" />
 
   <node pkg="tf" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 -0.5 -0.5 0.5 -0.5 base_link neato_laser 50" />
 
   <node pkg="tf" type="static_transform_publisher" name="field_odom_broadcaster" args="0.6096 0.3048 0 4.712388980 0 0 field odom 5" />
 
-  <node pkg="goat_lidar_merging" type="merger" name="goat_lidar_merging" clear_params="true">
-  </node>
+  <node pkg="goat_lidar_merging" type="merger" name="goat_lidar_merging" clear_params="true" />
+
+  <node pkg="rosbag" type="rosbag" name="rosbag_record_all" args="record -a" />
 
 </launch>
