@@ -163,5 +163,5 @@ class robotPOS
      * @param  quat Quaternion
      * @return      Euler angle (yaw)
      */
-    inline const float quatToEuler(const geometry_msgs::Quaternion& quat) const;
+    inline const double quatToEuler(const geometry_msgs::Quaternion& quat) const;
 };

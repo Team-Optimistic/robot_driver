@@ -141,7 +141,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   for (uint8_t data : msgData)
   {
   	ss << unsigned(data) << ",";
-  	ROS_INFO("data: %d", unsigned(data));
+  	//ROS_INFO("data: %d", unsigned(data));
   }
   ss >> cortexOut.data;
   cortexPub.publish(cortexOut);
@@ -269,7 +269,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 * @param  quat Quaternion
 * @return  n   Euler angle (yaw)
 */
-inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
+inline const double robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
 {
   tf::Quaternion q(quat.x, quat.y, quat.z, quat.w);
   tf::Matrix3x3 m(q);
@@ -284,7 +284,7 @@ inline const float robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) 
 */
 void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 {
-  const int msgLength = 10;
+  const int msgLength = 13;
   boost::array<uint8_t, msgLength> out;
 
   union long2Bytes { int32_t l; uint8_t b[4]; };
@@ -333,9 +333,20 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   out[7] = conv.b[3];
 
   const geometry_msgs::Quaternion quat = pose_field.pose.orientation;
-  out[8] = quatToEuler(quat);
 
-  out[9] = (int)(currentLidarRPM / 2);
+  double thetaTemp = quatToEuler(quat) * 57.2957795;
+  if (thetaTemp <= 180 && thetaTemp >= 90)
+  	thetaTemp = (360 - thetaTemp) + 90;
+  else
+  	thetaTemp = 90 - thetaTemp;
+
+  conv.l = (int32_t)thetaTemp;
+  out[8] = conv.b[0];
+  out[9] = conv.b[1];
+  out[10] = conv.b[2];
+  out[11] = conv.b[3];
+
+  out[12] = (int)(currentLidarRPM / 2);
   currentLidarRPM = 0;
 
   //Send header

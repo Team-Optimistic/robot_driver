@@ -18,6 +18,4 @@
 
   <node pkg="goat_lidar_merging" type="merger" name="goat_lidar_merging" clear_params="true" />
 
-  <node pkg="rosbag" type="rosbag" name="rosbag_record_all" args="record -a" />
-
 </launch>
