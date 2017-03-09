@@ -334,13 +334,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 
   const geometry_msgs::Quaternion quat = pose_field.pose.orientation;
 
-  double thetaTemp = quatToEuler(quat) * 57.2957795;
-  if (thetaTemp <= 180 && thetaTemp >= 90)
-  	thetaTemp = (360 - thetaTemp) + 90;
-  else
-  	thetaTemp = 90 - thetaTemp;
-
-  conv.l = (int32_t)thetaTemp;
+  conv.l = (int32_t)(quatToEuler(quat) * 57.2957795);
   out[8] = conv.b[0];
   out[9] = conv.b[1];
   out[10] = conv.b[2];
