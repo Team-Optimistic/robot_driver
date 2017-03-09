@@ -193,8 +193,8 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       const float dx = cos(theta) * dist, //world coordinate frame
                   dy = sin(theta) * dist;
 
-      const float v = dist / dt,                  
-                  vtheta = dtheta / dt;
+      const float v = 1000* dist / dt,                  
+                  vtheta = 1000 * dtheta / dt;
 
       odom->twist.twist.linear.x = v;
       odom->twist.twist.linear.y = 0;
