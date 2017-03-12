@@ -95,6 +95,9 @@ int main(int argc, char **argv)
     imuOut.linear_acceleration.y = 0;
     imuOut.linear_acceleration.x = 0;
     imuOut.linear_acceleration.z = 0;
+    
+    odomPub.publish(odomOut);
+    imuPub.publish(imuOut);
 
     while (ros::ok())
     {
