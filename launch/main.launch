@@ -8,7 +8,13 @@
     <rosparam command="load" file="/home/goat/catkin_ws/src/robot_driver/params/ekf_template.yaml"/>
   </node>
 
-  <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true" output="screen" />
+  <node pkg="xv_11_laser_driver" type="neato_laser_publisher" name="xv_11_laser_driver" clear_params="true" output="screen">
+    <param name="port" value="/dev/lidarUSB" type="str" />
+    <param name="frame_id" value="neato_laser" type="str" />
+    <param name="scan_topic_name" value="lidar/scan" type="str" />
+    <param name="lidar_rpm_topic_name" value="lidar/rpm" type="str" />
+    <param name="baud_rate" value="115200" type="int" />
+  </node>
 
   <node pkg="motion_path_creator" type="motion_path_creator" name="motion_path_creator" clear_params="true" output="screen" />
 
