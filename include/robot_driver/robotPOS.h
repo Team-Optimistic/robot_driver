@@ -45,8 +45,6 @@
 
 #include "robot_driver/MPU6000.h"
 
-#define ROBOT_STARTING_THETA 1.57079632679
-
 class robotPOS
 {
   public:

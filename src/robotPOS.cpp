@@ -47,10 +47,10 @@
 #include "robot_driver/robotPOS.h"
 
 robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
-port_(port),
-baud_rate_(baud_rate),
-serial_(io, port_),
-imu_(csChannel, speed)
+  port_(port),
+  baud_rate_(baud_rate),
+  serial_(io, port_),
+  imu_(csChannel, speed)
 {
   serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
 
@@ -58,7 +58,7 @@ imu_(csChannel, speed)
   cortexPub = n.advertise<std_msgs::String>("cortexPub", 1000);
   ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, this);
   mpcSub = n.subscribe<sensor_msgs::PointCloud2>("mpc/nextObjects", 1000, &robotPOS::mpc_callback, this);
-  lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar_rpm", 10, &robotPOS::lidarRPM_callback, this);
+  lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar/rpm", 10, &robotPOS::lidarRPM_callback, this);
 
   // Init imu
   ROS_INFO("IMU INIT\n");

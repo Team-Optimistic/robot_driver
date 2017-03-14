@@ -1,7 +1,8 @@
 <launch>
   <node pkg="robot_driver" type="robot_driver" name="robot_driver" clear_params="true" output="screen">
-    <param name="port" value="/dev/ttyUSB0" type="str" />
+    <param name="port" value="/dev/cortexUSB" type="str" />
     <param name="baud_rate" value="115200" type="int" />
+    <param name="frame_id" value="neato_laser" type="str" />
   </node>
 
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true" output="screen">

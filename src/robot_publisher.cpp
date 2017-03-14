@@ -55,12 +55,10 @@ int main(int argc, char **argv)
   int baud_rate;
   std::string frame_id;
 
-  priv_nh.param("port", port, std::string("/dev/cortexUSB"));
-  //n.getParam("port", port);
-  priv_nh.param("baud_rate", baud_rate, 115200);
-  //n.getParam("baud_rate", baud_rate);
+  n.getParam("port", port);
+  n.getParam("baud_rate", baud_rate);
+  n.getParam("frame_id", frame_id);
   ROS_INFO("Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
-  priv_nh.param("frame_id", frame_id, std::string("neato_laser"));
 
   boost::asio::io_service io;
   tf::Transform transform;
@@ -86,7 +84,7 @@ int main(int argc, char **argv)
     odomOut.pose.pose.position.x = 0;
     odomOut.pose.pose.position.y = 0;
     odomOut.pose.pose.position.z = 0;
-    odomOut.pose.pose.orientation = tf::createQuaternionMsgFromYaw(ROBOT_STARTING_THETA);
+    odomOut.pose.pose.orientation = tf::createQuaternionMsgFromYaw(0);
 
     imuOut.header.frame_id = "base_link";
     imuOut.angular_velocity.x = 0;
@@ -95,7 +93,7 @@ int main(int argc, char **argv)
     imuOut.linear_acceleration.y = 0;
     imuOut.linear_acceleration.x = 0;
     imuOut.linear_acceleration.z = 0;
-    
+
     odomPub.publish(odomOut);
     imuPub.publish(imuOut);
 
