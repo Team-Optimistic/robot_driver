@@ -55,9 +55,9 @@ int main(int argc, char **argv)
   int baud_rate;
   std::string frame_id;
 
-  n.getParam("port", port);
-  n.getParam("baud_rate", baud_rate);
-  n.getParam("frame_id", frame_id);
+  n.getParam("/robot_driver/port", port);
+  n.getParam("/robot_driver/baud_rate", baud_rate);
+  n.getParam("/robot_driver/frame_id", frame_id);
   ROS_INFO("Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
 
   boost::asio::io_service io;
