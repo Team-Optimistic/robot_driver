@@ -46,7 +46,7 @@
 
 #include "robot_driver/robotPOS.h"
 
-robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_service &io, int csChannel, long speed):
+robotPOS::robotPOS(const std::string &port, const uint32_t baud_rate, boost::asio::io_service &io, const int csChannel, const long speed):
   port_(port),
   baud_rate_(baud_rate),
   serial_(io, port_),
@@ -54,30 +54,30 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
 {
   serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
 
-  mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
-  cortexPub = n.advertise<std_msgs::String>("cortexPub", 1000);
-  ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, this);
-  mpcSub = n.subscribe<sensor_msgs::PointCloud2>("mpc/nextObjects", 1000, &robotPOS::mpc_callback, this);
+  mpcPub = n.advertise<sensor_msgs::PointCloud2>("robotPOS/pickedUpObjects", 10);
+  cortexPub = n.advertise<std_msgs::String>("robotPOS/cortexPub", 10);
+  ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 10, &robotPOS::ekf_callback, this);
+  mpcSub = n.subscribe<sensor_msgs::PointCloud2>("mpc/nextObjects", 10, &robotPOS::mpc_callback, this);
   lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar/rpm", 10, &robotPOS::lidarRPM_callback, this);
 
   // Init imu
-  ROS_INFO("IMU INIT\n");
+  ROS_INFO("robotPOS: IMU INIT\n");
 
   imu_.init(1, BITS_DLPF_CFG_20HZ);
 
-  usleep(100000);
+  usleep(10000);
 
-  ROS_INFO("gyro scale = %d", imu_.set_gyro_scale(BITS_FS_500DPS));
+  ROS_INFO("robotPOS: gyro scale = %d", imu_.set_gyro_scale(BITS_FS_500DPS));
 
-  usleep(500000);
+  usleep(50000);
 
-  ROS_INFO("accel scale = %d", imu_.set_acc_scale(BITS_FS_2G));
+  ROS_INFO("robotPOS: accel scale = %d", imu_.set_acc_scale(BITS_FS_2G));
 
-  usleep(100000);
-  usleep(500000);
+  usleep(10000);
+  usleep(50000);
 
   //Sample imu to get bias
-  ROS_INFO("IMU CALIBRATING");
+  ROS_INFO("robotPOS: IMU CALIBRATING");
 
   constexpr int imuSampleCount = 1000;
   for (int i = 0; i < imuSampleCount; i++)
@@ -91,12 +91,12 @@ robotPOS::robotPOS(const std::string &port, uint32_t baud_rate, boost::asio::io_
   channel1Bias /= imuSampleCount;
   channel2RotBias /= imuSampleCount;
 
-  ROS_INFO("Channel 0 Bias: %lf", channel0Bias);
-  ROS_INFO("Channel 1 Bias: %lf", channel1Bias);
-  ROS_INFO("Channel 2 Rot Bias: %lf", channel2RotBias);
+  ROS_INFO("robotPOS: Channel 0 Bias: %lf", channel0Bias);
+  ROS_INFO("robotPOS: Channel 1 Bias: %lf", channel1Bias);
+  ROS_INFO("robotPOS: Channel 2 Rot Bias: %lf", channel2RotBias);
 
-  ROS_INFO("IMU CALIBRATION DONE");
-  ROS_INFO("IMU INIT DONE");
+  ROS_INFO("robotPOS: IMU CALIBRATION DONE");
+  ROS_INFO("robotPOS: IMU INIT DONE");
 }
 
 /**
@@ -122,7 +122,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   // Verify msg count
   if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
   {
-    //ROS_INFO("Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
+    //ROS_INFO("robotPOS: poll: Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
   }
 
   // Load msg
@@ -159,22 +159,18 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       //Read in left quads from 4 byte union
       for (int i = 0; i < 4; i++)
-      {
         quads.b[i] = msgData[i + 1];
-      }
       const int32_t leftQuad = quads.l;
 
       //Read in right quads from 4 byte union
       for (int i = 0; i < 4; i++)
-      {
         quads.b[i] = msgData[i + 5];
-      }
       const int32_t rightQuad = quads.l;
 
       //Read in dt
       const int8_t dt = msgData[9];
 
-      // Twist
+      //Twist
       const int32_t rightDelta = (rightQuad - lastRightQuad),
                     leftDelta = (leftQuad - lastLeftQuad);
 
@@ -198,23 +194,19 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       odom->twist.twist.linear.x = v;
       odom->twist.twist.linear.y = 0;
       odom->twist.twist.linear.z = 0;
-
       odom->twist.twist.angular.x = 0;
       odom->twist.twist.angular.y = 0;
       thetaGlobal += dtheta;
       odom->twist.twist.angular.z = vtheta;
-
       odom->twist.covariance = ODOM_TWIST_COV_MAT;
 
-      // Pose
+      //Pose
       xPosGlobal += dx;
       yPosGlobal += dy;
       odom->pose.pose.position.x = xPosGlobal;
       odom->pose.pose.position.y = yPosGlobal;
       odom->pose.pose.position.z = 0;
-
       odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(thetaGlobal);
-
       odom->pose.covariance = ODOM_POSE_COV_MAT;
 
       break;
@@ -276,16 +268,12 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   const int msgLength = 13;
   boost::array<uint8_t, msgLength> out;
 
-  union long2Bytes { int32_t l; uint8_t b[4]; };
-  long2Bytes conv;
-
   static tf::TransformListener listener;
 
   geometry_msgs::PoseStamped pose_odom;
   geometry_msgs::PoseStamped pose_field;
   pose_odom.pose = in->pose.pose;
   pose_odom.header = in->header;
-  //ROS_INFO("time diff: %1.2f", ros::Time::now().toSec() - pose_odom.header.stamp.toSec());
 
   try
   {
@@ -295,17 +283,17 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   }
   catch (const tf2::ExtrapolationException& e)
   {
-    ROS_INFO("ekf_callback: Need to see the past");
+    ROS_INFO("robotPOS: ekf_callback: Need to see the past");
     return;
   }
   catch (const tf2::ConnectivityException& e)
   {
-    ROS_INFO("ekf_callback: Need more data for transform");
+    ROS_INFO("robotPOS: ekf_callback: Need more data for transform");
     return;
   }
   catch (const tf2::LookupException& e)
   {
-    ROS_INFO("ekf_callback: Can't find frame");
+    ROS_INFO("robotPOS: ekf_callback: Can't find frame");
     return;
   }
 
@@ -352,23 +340,16 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 
     constexpr int msgLength = 36;
 
-    union long2Bytes { int32_t l; int8_t b[4]; };
-    long2Bytes conv;
-
     std::vector<int8_t> out(msgLength);
     for (int i = 0; i < 4; i++)
     {
       if (!std::isfinite(cloud.points[i].x))
-      {
         cloud.points[i].x = 0;
-      }
 
       conv.l = cloud.points[i].x * 1000;
 
       if (!std::isfinite(conv.l))
-      {
         conv.l = 0;
-      }
 
       out[0 + (i * 9)] = conv.b[0];
       out[1 + (i * 9)] = conv.b[1];
@@ -376,16 +357,12 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
       out[3 + (i * 9)] = conv.b[3];
 
       if (!std::isfinite(cloud.points[i].y))
-      {
         cloud.points[i].y = 0;
-      }
 
       conv.l = cloud.points[i].y * 1000;
 
       if (!std::isfinite(conv.l))
-      {
         conv.l = 0;
-      }
 
       out[4 + (i * 9)] = conv.b[0];
       out[5 + (i * 9)] = conv.b[1];
@@ -393,7 +370,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
       out[7 + (i * 9)] = conv.b[3];
 
       out[8 + (i * 9)] = cloud.points[i].z;
-      ROS_INFO("mpc_callback: pushing type %d", (int)cloud.points[i].z);
+      ROS_INFO("robotPOS: mpc_callback: pushing type %d", (int)cloud.points[i].z);
     }
 
     //Send header
@@ -428,7 +405,7 @@ inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
     	return mpc_msg_length;
 
     default:
-    	ROS_INFO("Got bad msg type: %d", unsigned(type));
+    	ROS_INFO("robotPOS: Got bad msg type: %d", unsigned(type));
     	return 0;
   }
 }

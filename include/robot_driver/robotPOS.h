@@ -48,8 +48,7 @@
 class robotPOS
 {
   public:
-    robotPOS(const std::string& port, uint32_t baud_rate, boost::asio::io_service& io, int csChannel, long speed);
-
+    robotPOS(const std::string& port, const uint32_t baud_rate, boost::asio::io_service& io, const int csChannel, const long speed);
     ~robotPOS() {};
 
     /**
@@ -134,6 +133,9 @@ class robotPOS
 
     //Starting flag for sending a message to the cortex
     const boost::array<uint8_t, 1> startFlag  = {{0xFA}};
+
+    union long2Bytes { int32_t l; uint8_t b[4]; };
+    long2Bytes conv;
 
     /**
      * Returns the length of a given type of message
