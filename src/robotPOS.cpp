@@ -338,10 +338,10 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
   {
     sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
 
-    constexpr int msgLength = 36;
+    constexpr int msgLength = 27;
 
     std::vector<int8_t> out(msgLength);
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
       if (!std::isfinite(cloud.points[i].x))
         cloud.points[i].x = 0;
