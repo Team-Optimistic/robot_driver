@@ -84,15 +84,15 @@ class robotPOS
     mpu6000 imu_;
     double channel0Bias = 0, channel1Bias = 0, channel2RotBias = 0; //imu constant offsets measured at init time
 
-    static const uint8_t std_msg_type = 1, spc_msg_type = 2, mpc_msg_type = 3;
+    static const uint8_t std_msg_type = 1, mpc_msg_type = 2;
 
     //Lengths for recieved messages
-    static const uint8_t std_msg_length = 10, spc_msg_length = 3, mpc_msg_length = 3;
+    static const uint8_t std_msg_length = 10, mpc_msg_length = 3;
 
-    static const int msgType_Count = 3;
-    const boost::array<uint8_t, msgType_Count> msgTypes = {{std_msg_type, spc_msg_type, mpc_msg_type}};
+    static const int msgType_Count = 2;
+    const boost::array<uint8_t, msgType_Count> msgTypes = {{std_msg_type, mpc_msg_type}};
     bool isFirstMsg = true;
-    boost::array<uint8_t, msgType_Count> msgCounts = {{0, 0, 0}};
+    boost::array<uint8_t, msgType_Count> msgCounts = {{0, 0}};
 
     boost::asio::serial_port serial_; // UART port for the Cortex
 

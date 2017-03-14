@@ -54,7 +54,6 @@ imu_(csChannel, speed)
 {
   serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
 
-  spcPub = n.advertise<std_msgs::Empty>("spcRequest", 1000);
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
   cortexPub = n.advertise<std_msgs::String>("cortexPub", 1000);
   ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, this);
@@ -218,15 +217,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       odom->pose.covariance = ODOM_POSE_COV_MAT;
 
-      break;
-    }
-
-    //SPC msg means the robot wants to know whats behind it
-    //What's behind gets published from motion_path_creator as a regular MPC msg
-    case spc_msg_type:
-    {
-      //Tell motion_path_creator to tell the cortex which object to get
-      spcPub.publish(std_msgs::Empty());
       break;
     }
 
@@ -433,9 +423,6 @@ inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
   {
     case std_msg_type:
     	return std_msg_length;
-
-    case spc_msg_type:
-    	return spc_msg_length;
 
     case mpc_msg_type:
     	return mpc_msg_length;
