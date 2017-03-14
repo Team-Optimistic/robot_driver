@@ -58,7 +58,7 @@ imu_(csChannel, speed)
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("pickedUpObjects", 1000);
   cortexPub = n.advertise<std_msgs::String>("cortexPub", 1000);
   ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 1000, &robotPOS::ekf_callback, this);
-  mpcSub = n.subscribe<sensor_msgs::PointCloud2>("nextObjects", 1000, &robotPOS::mpc_callback, this);
+  mpcSub = n.subscribe<sensor_msgs::PointCloud2>("mpc/nextObjects", 1000, &robotPOS::mpc_callback, this);
   lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar_rpm", 10, &robotPOS::lidarRPM_callback, this);
 
   // Init imu
@@ -193,7 +193,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       const float dx = cos(theta) * dist, //world coordinate frame
                   dy = sin(theta) * dist;
 
-      const float v = 1000* dist / dt,                  
+      const float v = 1000* dist / dt,
                   vtheta = 1000 * dtheta / dt;
 
       odom->twist.twist.linear.x = v;
