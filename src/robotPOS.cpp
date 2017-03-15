@@ -344,40 +344,21 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 
     std::for_each(cloud.points.begin(), cloud.points.end(), [](geometry_msgs::Point32 &point) {
       static int index = 0;
-      
-    });
 
-    for (int i = 0; i < 3; i++)
-    {
-      if (!std::isfinite(cloud.points[i].x))
-        cloud.points[i].x = 0;
+      auto fillOut = [&out, &conv](int start, float32_t val) {
+        conv.l = val;
+        for (int i = 0; i < 4; i++)
+          out.at(start + i + index * 9) = conv.b[i];
+      };
 
-      conv.l = cloud.points[i].x * 1000;
+      fillOut(0, point.x * 1000);
+      fillOut(4, point.y * 1000);
+      out.at(8 + index * 9) = cloud.points.at(index).z;
 
-      if (!std::isfinite(conv.l))
-        conv.l = 0;
+      index++;
 
-      out[0 + (i * 9)] = conv.b[0];
-      out[1 + (i * 9)] = conv.b[1];
-      out[2 + (i * 9)] = conv.b[2];
-      out[3 + (i * 9)] = conv.b[3];
-
-      if (!std::isfinite(cloud.points[i].y))
-        cloud.points[i].y = 0;
-
-      conv.l = cloud.points[i].y * 1000;
-
-      if (!std::isfinite(conv.l))
-        conv.l = 0;
-
-      out[4 + (i * 9)] = conv.b[0];
-      out[5 + (i * 9)] = conv.b[1];
-      out[6 + (i * 9)] = conv.b[2];
-      out[7 + (i * 9)] = conv.b[3];
-
-      out[8 + (i * 9)] = cloud.points[i].z;
       ROS_INFO("robotPOS: mpc_callback: pushing type %d", (int)cloud.points[i].z);
-    }
+    });
 
     //Send header
     sendMsgHeader(mpc_msg_type);
