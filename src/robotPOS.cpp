@@ -342,10 +342,12 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 
     std::vector<int8_t> out(msgLength); //Vector holding output bytes
 
-    std::for_each(cloud.points.begin(), cloud.points.end(), [](geometry_msgs::Point32 &point) {
+    //Collect points
+    std::for_each(cloud.points.begin(), cloud.points.end(), [this](geometry_msgs::Point32 &point) {
       static int index = 0;
 
-      auto fillOut = [&out, &conv](int start, float32_t val) {
+      //Convert float32_t to 4 bytes
+      auto fillOut = [&out, this](int start, float32_t val) {
         conv.l = val;
         for (int i = 0; i < 4; i++)
           out.at(start + i + index * 9) = conv.b[i];
