@@ -343,7 +343,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
     std::vector<int8_t> out(msgLength); //Vector holding output bytes
 
     //Collect points
-    std::for_each(cloud.points.begin(), cloud.points.end(), [this](geometry_msgs::Point32 &point) {
+    std::for_each(cloud.points.begin(), cloud.points.end(), [&out, this](geometry_msgs::Point32 &point) {
       static int index = 0;
 
       //Convert float32_t to 4 bytes
