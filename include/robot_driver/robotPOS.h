@@ -157,11 +157,4 @@ class robotPOS
      * @return       If header is valid
      */
     inline const bool verifyMsgHeader(const uint8_t type, const uint8_t count);
-
-    /**
-     * Converts a quaternion to an euler angle (yaw only)
-     * @param  quat Quaternion
-     * @return      Euler angle (yaw)
-     */
-    inline const double quatToEuler(const geometry_msgs::Quaternion& quat) const;
 };

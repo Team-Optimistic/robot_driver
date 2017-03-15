@@ -246,20 +246,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 }
 
 /**
-* Converts a quaternion to an euler angle (yaw only)
-* @param  quat Quaternion
-* @return  n   Euler angle (yaw)
-*/
-inline const double robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
-{
-  tf::Quaternion q(quat.x, quat.y, quat.z, quat.w);
-  tf::Matrix3x3 m(q);
-  double roll, pitch, yaw;
-  m.getRPY(roll, pitch, yaw);
-  return yaw;
-}
-
-/**
 * Callback function for sending ekf position estimate to cortex
 * STD Msg
 */
@@ -309,15 +295,13 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   out[6] = conv.b[2];
   out[7] = conv.b[3];
 
-  const geometry_msgs::Quaternion quat = pose_field.pose.orientation;
-
-  conv.l = (int32_t)(quatToEuler(quat) * 57.2957795);
+  conv.l = (int32_t)(tf::getYaw(pose_field.pose.orientation) * 57.2957795);
   out[8] = conv.b[0];
   out[9] = conv.b[1];
   out[10] = conv.b[2];
   out[11] = conv.b[3];
 
-  out[12] = (int)(currentLidarRPM / 2);
+  out[12] = int(currentLidarRPM / 2);
   currentLidarRPM = 0;
 
   //Send header
