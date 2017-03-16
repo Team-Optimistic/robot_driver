@@ -347,10 +347,10 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
     });
 
     //Send header
-    sendMsgHeader(mpc_msg_type);
+    //sendMsgHeader(mpc_msg_type);
 
     //Send data
-    boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
+    //boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
 
     //Set flag
     didPickUpObjects = false;
