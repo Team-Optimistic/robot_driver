@@ -246,20 +246,6 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 }
 
 /**
-* Converts a quaternion to an euler angle (yaw only)
-* @param  quat Quaternion
-* @return  n   Euler angle (yaw)
-*/
-inline const double robotPOS::quatToEuler(const geometry_msgs::Quaternion& quat) const
-{
-  tf::Quaternion q(quat.x, quat.y, quat.z, quat.w);
-  tf::Matrix3x3 m(q);
-  double roll, pitch, yaw;
-  m.getRPY(roll, pitch, yaw);
-  return yaw;
-}
-
-/**
 * Callback function for sending ekf position estimate to cortex
 * STD Msg
 */
@@ -309,15 +295,13 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
   out[6] = conv.b[2];
   out[7] = conv.b[3];
 
-  const geometry_msgs::Quaternion quat = pose_field.pose.orientation;
-
-  conv.l = (int32_t)(quatToEuler(quat) * 57.2957795);
+  conv.l = (int32_t)(tf::getYaw(pose_field.pose.orientation) * 57.2957795);
   out[8] = conv.b[0];
   out[9] = conv.b[1];
   out[10] = conv.b[2];
   out[11] = conv.b[3];
 
-  out[12] = (int)(currentLidarRPM / 2);
+  out[12] = int(currentLidarRPM / 2);
   currentLidarRPM = 0;
 
   //Send header
@@ -339,46 +323,35 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
   {
     sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
 
-    constexpr int msgLength = 27;
+    constexpr int msgLength = 27; //Length of output msg must be constant
 
-    std::vector<int8_t> out(msgLength);
-    for (int i = 0; i < 3; i++)
-    {
-      if (!std::isfinite(cloud.points[i].x))
-        cloud.points[i].x = 0;
+    std::vector<int8_t> out(msgLength); //Vector holding output bytes
 
-      conv.l = cloud.points[i].x * 1000;
+    //Collect points
+    std::for_each(cloud.points.begin(), cloud.points.end(), [&out, this](geometry_msgs::Point32 &point) {
+      static int index = 0;
 
-      if (!std::isfinite(conv.l))
-        conv.l = 0;
+      //Convert num to 4 bytes
+      auto fillOut = [&out, this](int start, float val) {
+        conv.l = val;
+        for (int i = 0; i < 4; i++)
+          out.at(start + i + index * 9) = conv.b[i];
+      };
 
-      out[0 + (i * 9)] = conv.b[0];
-      out[1 + (i * 9)] = conv.b[1];
-      out[2 + (i * 9)] = conv.b[2];
-      out[3 + (i * 9)] = conv.b[3];
+      fillOut(0, point.x * 1000);
+      fillOut(4, point.y * 1000);
+      out.at(8 + index * 9) = cloud.points.at(index).z;
 
-      if (!std::isfinite(cloud.points[i].y))
-        cloud.points[i].y = 0;
+      index++;
 
-      conv.l = cloud.points[i].y * 1000;
-
-      if (!std::isfinite(conv.l))
-        conv.l = 0;
-
-      out[4 + (i * 9)] = conv.b[0];
-      out[5 + (i * 9)] = conv.b[1];
-      out[6 + (i * 9)] = conv.b[2];
-      out[7 + (i * 9)] = conv.b[3];
-
-      out[8 + (i * 9)] = cloud.points[i].z;
-      ROS_INFO("robotPOS: mpc_callback: pushing type %d", (int)cloud.points[i].z);
-    }
+      ROS_INFO("robotPOS: mpc_callback: pushing type %d", (int)cloud.points.at(index).z);
+    });
 
     //Send header
-    sendMsgHeader(mpc_msg_type);
+    //sendMsgHeader(mpc_msg_type);
 
     //Send data
-    boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
+    //boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
 
     //Set flag
     didPickUpObjects = false;
