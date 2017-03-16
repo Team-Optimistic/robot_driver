@@ -330,8 +330,8 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
     std::for_each(cloud.points.begin(), cloud.points.end(), [&out, this](geometry_msgs::Point32 &point) {
       static int index = 0;
 
-      //Convert float32_t to 4 bytes
-      auto fillOut = [&out, this](int start, float32_t val) {
+      //Convert num to 4 bytes
+      auto fillOut = [&out, this](int start, float val) {
         conv.l = val;
         for (int i = 0; i < 4; i++)
           out.at(start + i + index * 9) = conv.b[i];
@@ -343,7 +343,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 
       index++;
 
-      ROS_INFO("robotPOS: mpc_callback: pushing type %d", (int)cloud.points[i].z);
+      ROS_INFO("robotPOS: mpc_callback: pushing type %d", (int)cloud.points.at(index).z);
     });
 
     //Send header
