@@ -333,6 +333,7 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 */
 void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 {
+  /* 
   //Only tell the robot to get more objects if it isn't busy
   if (didPickUpObjects)
   {
@@ -382,6 +383,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
     //Set flag
     didPickUpObjects = false;
   }
+ */
 }
 
 void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
