@@ -57,7 +57,7 @@ robotPOS::robotPOS(const std::string &port, const uint32_t baud_rate, boost::asi
   mpcPub = n.advertise<sensor_msgs::PointCloud2>("robotPOS/pickedUpObjects", 10);
   cortexPub = n.advertise<std_msgs::String>("robotPOS/cortexPub", 10);
   ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 10, &robotPOS::ekf_callback, this);
-  mpcSub = n.subscribe<sensor_msgs::PointCloud2>("mpc/nextObjects", 10, &robotPOS::mpc_callback, this);
+  mpcSub = n.subscribe<sensor_msgs::PointCloud>("mpc/nextObjects", 10, &robotPOS::mpc_callback, this);
   lidarRPMSub = n.subscribe<std_msgs::UInt16>("lidar/rpm", 10, &robotPOS::lidarRPM_callback, this);
 
   // Init imu
@@ -315,22 +315,20 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 * Callback function for sending new object positions to cortex
 * MPC Msg
 */
-void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
+void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 {
   
  // Only tell the robot to get more objects if it isn't busy
  // if (didPickUpObjects)
  // {
  ROS_INFO("didPickUpObjects %d", didPickUpObjects);
-    sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
-
     constexpr int msgLength = 27; //Length of output msg must be constant
 
     std::vector<int8_t> out(msgLength); //Vector holding output bytes
 
     //Collect points
-	ROS_INFO("cloud size  %d ",cloud.points.size() );
-    std::for_each(cloud.points.begin(), cloud.points.end(), [&out, this](geometry_msgs::Point32 &point) {
+	ROS_INFO("cloud size  %d ",in->points.size() );
+    std::for_each(in->points.begin(), in->points.end(), [&out, this](geometry_msgs::Point32 &point) {
       static int index = 0;
 ROS_INFO("confused 2" );
       //Convert num to 4 bytes
@@ -342,11 +340,11 @@ ROS_INFO("confused 2" );
 	ROS_INFO("confused 3" );
       fillOut(0, point.x * 1000);
       fillOut(4, point.y * 1000);
-      out.at(8 + index * 9) = cloud.points.at(index).z;
+      out.at(8 + index * 9) = in->points.at(index).z;
 
       index++;
 
-      ROS_INFO("robotPOS: mpc_callback: pushing type %d", (int)cloud.points.at(index).z);
+      ROS_INFO("robotPOS: mpc_callback: pushing type %d", (int)in->points.at(index).z);
     });
 
     //Send header
