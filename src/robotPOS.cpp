@@ -342,9 +342,6 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 
     ROS_INFO("generating msg %d",index );
     out.at(8 + index * 9) = in->points.at(index).z;
-
-    index++;
-
     ROS_INFO("robotPOS: mpc_callback: pushing type %d", in->points.at(index).z);
 
     //Send header
