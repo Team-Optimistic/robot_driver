@@ -340,11 +340,11 @@ ROS_INFO("confused 2" );
 	ROS_INFO("confused 3" );
       fillOut(0, point.x * 1000);
       fillOut(4, point.y * 1000);
-      out.at(8 + index * 9) = in->points.at(index).z;
+      out.at(8 + index * 9) = point.z;
 
       index++;
 
-      ROS_INFO("robotPOS: mpc_callback: pushing type %d", (int)in->points.at(index).z);
+      ROS_INFO("robotPOS: mpc_callback: pushing type %d", point.z);
     });
 
     //Send header
