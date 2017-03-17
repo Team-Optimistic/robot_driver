@@ -333,15 +333,15 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 
   //Convert num to 4 bytes
 
-    conv.l = point.x * 1000;
+    conv.l = in->points.at(index).x * 1000;
     for (int i = 0; i < 4; i++)
       out.at(i + index * 9) = conv.b[i];
-    conv.l = point.y * 1000;
+    conv.l = in->points.at(index).y * 1000;
     for (int i = 0; i < 4; i++)
       out.at(4 + i + index * 9) = conv.b[i];
 
     ROS_INFO("generating msg %d",index );
-    out.at(8 + index * 9) = point.z;
+    out.at(8 + index * 9) = in->points.at(index).z;
 
     index++;
 
