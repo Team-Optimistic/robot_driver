@@ -47,10 +47,10 @@
 #include "robot_driver/robotPOS.h"
 
 robotPOS::robotPOS(const std::string &port, const uint32_t baud_rate, boost::asio::io_service &io, const int csChannel, const long speed):
-  port_(port),
-  baud_rate_(baud_rate),
-  serial_(io, port_),
-  imu_(csChannel, speed)
+port_(port),
+baud_rate_(baud_rate),
+serial_(io, port_),
+imu_(csChannel, speed)
 {
   serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
 
@@ -172,24 +172,24 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       //Twist
       const int32_t rightDelta = (rightQuad - lastRightQuad),
-                    leftDelta = (leftQuad - lastLeftQuad);
+      leftDelta = (leftQuad - lastLeftQuad);
 
       lastRightQuad = rightQuad;
       lastLeftQuad = leftQuad;
 
       const float avg = (rightDelta + leftDelta) / 2.0,
-                  dif = (rightDelta - leftDelta) / 2.0;
+      dif = (rightDelta - leftDelta) / 2.0;
 
       const float dist = (avg * straightConversion) / 1000.0, //robots coordinate frame
-                  dtheta = dif * thetaConversion;
+      dtheta = dif * thetaConversion;
 
       const float theta = thetaGlobal + dtheta;
 
       const float dx = cos(theta) * dist, //world coordinate frame
-                  dy = sin(theta) * dist;
+      dy = sin(theta) * dist;
 
       const float v = 1000* dist / dt,
-                  vtheta = 1000 * dtheta / dt;
+      vtheta = 1000 * dtheta / dt;
 
       odom->twist.twist.linear.x = v;
       odom->twist.twist.linear.y = 0;
@@ -317,35 +317,35 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 */
 void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 {
-  
+
  // Only tell the robot to get more objects if it isn't busy
  // if (didPickUpObjects)
  // {
  ROS_INFO("didPickUpObjects %d", didPickUpObjects);
-    constexpr int msgLength = 27; //Length of output msg must be constant
+  constexpr int msgLength = 27; //Length of output msg must be constant
 
-    std::vector<int8_t> out(msgLength); //Vector holding output bytes
+  std::vector<int8_t> out(msgLength); //Vector holding output bytes
 
     //Collect points
-	ROS_INFO("cloud size  %d ",in->points.size() );
-    std::for_each(in->points.begin(), in->points.end(), [&out, this](geometry_msgs::Point32 &point) {
-      static int index = 0;
-ROS_INFO("confused 2" );
-      //Convert num to 4 bytes
-      auto fillOut = [&out, this](int start, float val) {
-        conv.l = val;
-        for (int i = 0; i < 4; i++)
-          out.at(start + i + index * 9) = conv.b[i];
-      };
-	ROS_INFO("confused 3" );
-      fillOut(0, point.x * 1000);
-      fillOut(4, point.y * 1000);
-      out.at(8 + index * 9) = point.z;
+  ROS_INFO("cloud size  %d ",in->points.size() );
 
-      index++;
+  for(int index = 0; index < in->points.size(); index++){
 
-      ROS_INFO("robotPOS: mpc_callback: pushing type %d", point.z);
-    });
+  //Convert num to 4 bytes
+
+    conv.l = point.x * 1000;
+    for (int i = 0; i < 4; i++)
+      out.at(i + index * 9) = conv.b[i];
+    conv.l = point.y * 1000;
+    for (int i = 0; i < 4; i++)
+      out.at(4 + i + index * 9) = conv.b[i];
+
+    ROS_INFO("generating msg %d",index );
+    out.at(8 + index * 9) = point.z;
+
+    index++;
+
+    ROS_INFO("robotPOS: mpc_callback: pushing type %d", point.z);
 
     //Send header
     //sendMsgHeader(mpc_msg_type);
@@ -355,7 +355,7 @@ ROS_INFO("confused 2" );
 
     //Set flag
     didPickUpObjects = false;
-  //}
+  }
 }
 
 void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
@@ -373,14 +373,14 @@ inline const uint8_t robotPOS::getMsgLengthForType(const uint8_t type) const
   switch (type)
   {
     case std_msg_type:
-    	return std_msg_length;
+    return std_msg_length;
 
     case mpc_msg_type:
-    	return mpc_msg_length;
+    return mpc_msg_length;
 
     default:
-    	ROS_INFO("robotPOS: Got bad msg type: %d", unsigned(type));
-    	return 0;
+    ROS_INFO("robotPOS: Got bad msg type: %d", unsigned(type));
+    return 0;
   }
 }
 
