@@ -328,21 +328,21 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 
     //Collect points
   ROS_INFO("cloud size  %d ",in->points.size() );
-
-  for(int index = 0; index < in->points.size(); index++){
+  if(didPickUpObjects)
+    for(int index = 0; index < in->points.size(); index++){
 
   //Convert num to 4 bytes
 
-    conv.l = in->points.at(index).x * 1000;
-    for (int i = 0; i < 4; i++)
-      out.at(i + index * 9) = conv.b[i];
-    conv.l = in->points.at(index).y * 1000;
-    for (int i = 0; i < 4; i++)
-      out.at(4 + i + index * 9) = conv.b[i];
+      conv.l = in->points.at(index).x * 1000;
+      for (int i = 0; i < 4; i++)
+        out.at(i + index * 9) = conv.b[i];
+      conv.l = in->points.at(index).y * 1000;
+      for (int i = 0; i < 4; i++)
+        out.at(4 + i + index * 9) = conv.b[i];
 
-    ROS_INFO("generating msg %d",index );
-    out.at(8 + index * 9) = in->points.at(index).z;
-    ROS_INFO("robotPOS: mpc_callback: pushing type %d", in->points.at(index).z);
+      ROS_INFO("generating msg %d",index );
+      out.at(8 + index * 9) = in->points.at(index).z;
+      ROS_INFO("robotPOS: mpc_callback: pushing type %d", in->points.at(index).z);
 
     //Send header
     //sendMsgHeader(mpc_msg_type);
@@ -351,14 +351,14 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
     //boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
 
     //Set flag
-    didPickUpObjects = false;
+      didPickUpObjects = false;
+    }
   }
-}
 
-void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
-{
-  currentLidarRPM = unsigned(in->data);
-}
+  void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
+  {
+    currentLidarRPM = unsigned(in->data);
+  }
 
 /**
 * Returns the length of a given type of message
