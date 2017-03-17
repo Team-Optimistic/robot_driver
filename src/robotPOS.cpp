@@ -317,10 +317,11 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 */
 void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 {
-  /* 
-  //Only tell the robot to get more objects if it isn't busy
-  if (didPickUpObjects)
-  {
+  
+ // Only tell the robot to get more objects if it isn't busy
+ // if (didPickUpObjects)
+ // {
+ ROS_INFO("didPickUpObjects %d", didPickUpObjects);
     sensor_msgs::convertPointCloud2ToPointCloud(*in, cloud);
 
     constexpr int msgLength = 27; //Length of output msg must be constant
@@ -328,16 +329,17 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
     std::vector<int8_t> out(msgLength); //Vector holding output bytes
 
     //Collect points
+	ROS_INFO("cloud size  %d ",cloud.points.size() );
     std::for_each(cloud.points.begin(), cloud.points.end(), [&out, this](geometry_msgs::Point32 &point) {
       static int index = 0;
-
+ROS_INFO("confused 2" );
       //Convert num to 4 bytes
       auto fillOut = [&out, this](int start, float val) {
         conv.l = val;
         for (int i = 0; i < 4; i++)
           out.at(start + i + index * 9) = conv.b[i];
       };
-
+	ROS_INFO("confused 3" );
       fillOut(0, point.x * 1000);
       fillOut(4, point.y * 1000);
       out.at(8 + index * 9) = cloud.points.at(index).z;
@@ -355,8 +357,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in)
 
     //Set flag
     didPickUpObjects = false;
-  }
- */
+  //}
 }
 
 void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
