@@ -345,7 +345,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 
     index++;
 
-    ROS_INFO("robotPOS: mpc_callback: pushing type %d", point.z);
+    ROS_INFO("robotPOS: mpc_callback: pushing type %d", in->points.at(index).z);
 
     //Send header
     //sendMsgHeader(mpc_msg_type);
