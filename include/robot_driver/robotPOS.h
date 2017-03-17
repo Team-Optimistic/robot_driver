@@ -65,7 +65,7 @@ class robotPOS
     /**
      * Callback function for sending new object positions to cortex
      */
-    void mpc_callback(const sensor_msgs::PointCloud2::ConstPtr& in);
+    void mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in);
 
     /**
      * Callback function for lidar rpm
