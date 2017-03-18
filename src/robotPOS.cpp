@@ -319,20 +319,15 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 {
 
  // Only tell the robot to get more objects if it isn't busy
- // if (didPickUpObjects)
- // {
- ROS_INFO("didPickUpObjects %d", didPickUpObjects);
   constexpr int msgLength = 27; //Length of output msg must be constant
 
   std::vector<int8_t> out(msgLength); //Vector holding output bytes
 
     //Collect points
-  ROS_INFO("cloud size  %d ",in->points.size() );
   if(didPickUpObjects)
     for(int index = 0; index < in->points.size(); index++){
 
-  //Convert num to 4 bytes
-
+      //Convert num to 4 bytes
       conv.l = in->points.at(index).x * 1000;
       for (int i = 0; i < 4; i++)
         out.at(i + index * 9) = conv.b[i];
@@ -346,10 +341,8 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 
     //Send header
     sendMsgHeader(mpc_msg_type);
-
     //Send data
     boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
-
     //Set flag
       didPickUpObjects = false;
     }
