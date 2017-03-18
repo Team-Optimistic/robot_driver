@@ -215,6 +215,8 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     //MPC msg means the robot is telling us it has scored its last objects
     case mpc_msg_type:
     {
+       ROS_INFO("robotPOS: saw mpc request");
+        
       //Publish the objects that got picked up
       //sensor_msgs::PointCloud2 out;
       //sensor_msgs::convertPointCloudToPointCloud2(cloud, out);
