@@ -216,9 +216,9 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     case mpc_msg_type:
     {
       //Publish the objects that got picked up
-      sensor_msgs::PointCloud2 out;
-      sensor_msgs::convertPointCloudToPointCloud2(cloud, out);
-      mpcPub.publish(out);
+      //sensor_msgs::PointCloud2 out;
+      //sensor_msgs::convertPointCloudToPointCloud2(cloud, out);
+      //mpcPub.publish(out);
 
       //Set flag
       didPickUpObjects = true;
