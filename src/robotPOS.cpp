@@ -108,19 +108,19 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
 
-  const int start_index = 0, msg_type_index = 1, msg_count_index = 2;
+  constexpr int start_index = 0, msg_type_index = 1, msg_count_index = 2;
 
   // Load start byte
   do
   {
-    boost::asio::read(serial_, boost::asio::buffer(&flagHolders[0], 1));
+    boost::asio::read(serial_, boost::asio::buffer(&flagHolders[start_index], 1));
   } while (flagHolders[start_index] != 0xFA);
 
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
 
   // Verify msg count
-  if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
+  if (!verifyMsgHeader(flagHolders[msg_type_index], flagHolders[msg_count_index]))
   {
     //ROS_INFO("robotPOS: poll: Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
   }
@@ -130,7 +130,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   union long2Bytes { int32_t l; uint8_t b[4]; };
 
   //Init data vector with size of message
-  std::vector<uint8_t> msgData(getMsgLengthForType(flagHolders[1]));
+  std::vector<uint8_t> msgData(getMsgLengthForType(flagHolders[msg_type_index]));
   boost::asio::read(serial_, boost::asio::buffer(msgData));
 
   //Publish raw bytes for the record
@@ -216,7 +216,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     case mpc_msg_type:
     {
        ROS_INFO("robotPOS: saw mpc request");
-        
+
       //Publish the objects that got picked up
       //sensor_msgs::PointCloud2 out;
       //sensor_msgs::convertPointCloudToPointCloud2(cloud, out);
