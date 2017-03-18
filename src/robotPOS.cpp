@@ -345,10 +345,10 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
       ROS_INFO("robotPOS: mpc_callback: pushing type %d", in->points.at(index).z);
 
     //Send header
-    //sendMsgHeader(mpc_msg_type);
+    sendMsgHeader(mpc_msg_type);
 
     //Send data
-    //boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
+    boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
 
     //Set flag
       didPickUpObjects = false;
