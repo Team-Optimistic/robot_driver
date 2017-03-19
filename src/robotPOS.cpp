@@ -118,7 +118,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
-
+  ROS_INFO("Header %d  %d  %d",flagHolders[0],flagHolders[1],flagHolders[2]);
   // Verify msg count
   if (!verifyMsgHeader(flagHolders[1], flagHolders[2]))
   {
@@ -132,7 +132,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   //Init data vector with size of message
   std::vector<uint8_t> msgData(getMsgLengthForType(flagHolders[1]));
   boost::asio::read(serial_, boost::asio::buffer(msgData));
-
+  ROS_INFO("finished being read");
   //Publish raw bytes for the record
   std_msgs::String cortexOut;
   std::stringstream ss;
