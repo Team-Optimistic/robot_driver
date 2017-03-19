@@ -84,7 +84,7 @@ class robotPOS
     static const uint8_t std_msg_type = 1, mpc_msg_type = 2;
 
     //Lengths for recieved messages
-    static const uint8_t std_msg_length = 10, mpc_msg_length = 3;
+    static const uint8_t std_msg_length = 10, mpc_msg_length = 0;
 
     static const int msgType_Count = 2;
     const boost::array<uint8_t, msgType_Count> msgTypes = {{std_msg_type, mpc_msg_type}};
