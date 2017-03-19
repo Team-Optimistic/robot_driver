@@ -130,8 +130,10 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   union long2Bytes { int32_t l; uint8_t b[4]; };
 
   //Init data vector with size of message
-  std::vector<uint8_t> msgData(getMsgLengthForType(flagHolders[msg_type_index]));
-  boost::asio::read(serial_, boost::asio::buffer(msgData));
+  if(getMsgLengthForType(flagHolders[msg_type_index]){
+    std::vector<uint8_t> msgData(getMsgLengthForType(flagHolders[msg_type_index]));
+    boost::asio::read(serial_, boost::asio::buffer(msgData));
+  }
   ROS_INFO("finished being read");
   //Publish raw bytes for the record
   std_msgs::String cortexOut;
@@ -215,7 +217,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     //MPC msg means the robot is telling us it has scored its last objects
     case mpc_msg_type:
     {
-       ROS_INFO("robotPOS: saw mpc request");
+     ROS_INFO("robotPOS: saw mpc request");
 
       //Publish the objects that got picked up
       //sensor_msgs::PointCloud2 out;
@@ -223,18 +225,18 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       //mpcPub.publish(out);
 
       //Set flag
-      didPickUpObjects = true;
-      break;
-    }
+     didPickUpObjects = true;
+     break;
+   }
 
-    default:
-    {
-      break;
-    }
+   default:
+   {
+    break;
   }
+}
 
   // Fill imu message
-  constexpr float dpsToRps = 0.01745;
+constexpr float dpsToRps = 0.01745;
   imu->angular_velocity.x = 0; //imu_.read_rot(0) * dpsToRps;
   imu->angular_velocity.y = 0; //imu_.read_rot(1) * dpsToRps;
   imu->angular_velocity.z = (imu_.read_rot(2) - channel2RotBias) * dpsToRps;
@@ -326,7 +328,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
   std::vector<int8_t> out(msgLength); //Vector holding output bytes
 
     //Collect points
-  if(didPickUpObjects)
+  if(didPickUpObjects){
     for(int index = 0; index < in->points.size(); index++){
 
       //Convert num to 4 bytes
@@ -340,20 +342,20 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
       ROS_INFO("generating msg %d",index );
       out.at(8 + index * 9) = in->points.at(index).z;
       ROS_INFO("robotPOS: mpc_callback: pushing type %d", in->points.at(index).z);
-
+    }
     //Send header
     sendMsgHeader(mpc_msg_type);
     //Send data
     boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
     //Set flag
-      didPickUpObjects = false;
-    }
+    didPickUpObjects = false;
   }
+}
 
-  void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
-  {
-    currentLidarRPM = unsigned(in->data);
-  }
+void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
+{
+  currentLidarRPM = unsigned(in->data);
+}
 
 /**
 * Returns the length of a given type of message
