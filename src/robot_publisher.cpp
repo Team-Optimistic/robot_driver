@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     robotPOS robot(port, baud_rate, io, 0, 500000);
 
     ros::Publisher odomPub = n.advertise<nav_msgs::Odometry>("robot_publisher/odom0", 1000),
-                   imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
+    imuPub = n.advertise<sensor_msgs::Imu>("robot_publisher/imu0", 1000);
 
     nav_msgs::Odometry odomOut;
     sensor_msgs::Imu imuOut;
@@ -102,10 +102,11 @@ int main(int argc, char **argv)
       odomOut.header.stamp = ros::Time::now();
       imuOut.header.stamp = ros::Time::now();
 
-      robot.poll(&odomOut, &imuOut);
+      if(robot.poll(&odomOut, &imuOut)){
 
-      odomPub.publish(odomOut);
-      imuPub.publish(imuOut);
+        odomPub.publish(odomOut);
+        imuPub.publish(imuOut);
+      }
 
       ros::spinOnce();
     }

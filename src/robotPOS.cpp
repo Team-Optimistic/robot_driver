@@ -104,7 +104,8 @@ imu_(csChannel, speed)
 * @param odom Odometry data
 * @param imu  IMU data
 */
-void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
+//true if odom and imu were filled
+bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
 
@@ -132,7 +133,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   //Init data vector with size of message
   std::vector<uint8_t> msgData;
   if(getMsgLengthForType(flagHolders[msg_type_index])){
-   msgData.reserve(getMsgLengthForType(flagHolders[msg_type_index]));
+    msgData.reserve(getMsgLengthForType(flagHolders[msg_type_index]));
     boost::asio::read(serial_, boost::asio::buffer(msgData));
   }
   ROS_INFO("finished being read");
@@ -142,7 +143,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   ss << "cortex data in: ";
   for (uint8_t data : msgData)
   {
-  	ss << unsigned(data) << ",";
+    ss << unsigned(data) << ",";
   	//ROS_INFO("data: %d", unsigned(data));
   }
   ss >> cortexOut.data;
@@ -218,7 +219,7 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     //MPC msg means the robot is telling us it has scored its last objects
     case mpc_msg_type:
     {
-     ROS_INFO("robotPOS: saw mpc request");
+      ROS_INFO("robotPOS: saw mpc request");
 
       //Publish the objects that got picked up
       //sensor_msgs::PointCloud2 out;
@@ -226,18 +227,20 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       //mpcPub.publish(out);
 
       //Set flag
-     didPickUpObjects = true;
-     break;
-   }
+      didPickUpObjects = true;
+      return false
+      break;
+    }
 
-   default:
-   {
-    break;
+    default:
+    {
+      return false;
+      break;
+    }
   }
-}
 
   // Fill imu message
-constexpr float dpsToRps = 0.01745;
+  constexpr float dpsToRps = 0.01745;
   imu->angular_velocity.x = 0; //imu_.read_rot(0) * dpsToRps;
   imu->angular_velocity.y = 0; //imu_.read_rot(1) * dpsToRps;
   imu->angular_velocity.z = (imu_.read_rot(2) - channel2RotBias) * dpsToRps;
@@ -248,6 +251,7 @@ constexpr float dpsToRps = 0.01745;
   imu->linear_acceleration.x = (imu_.read_acc(1) - channel1Bias) * gravity;
   imu->linear_acceleration.z =  gravity; //imu_.read_acc(2) * gravity;
   imu->linear_acceleration_covariance = emptyIMUCov;
+  return true;
 }
 
 /**

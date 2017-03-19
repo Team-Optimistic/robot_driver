@@ -55,7 +55,7 @@ class robotPOS
       * Poll the laser to get a new scan. Blocks until a complete new scan is received or close is called.
       * @param scan LaserScan message pointer to fill in with the scan. The caller is responsible for filling in the ROS timestamp and frame_id
       */
-    void poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu);
+    bool poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu);
 
     /**
      * Callback function for sending ekf position estimate to cortex
