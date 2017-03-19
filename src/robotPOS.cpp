@@ -228,7 +228,7 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       //Set flag
       didPickUpObjects = true;
-      return false
+      return false;
       break;
     }
 
