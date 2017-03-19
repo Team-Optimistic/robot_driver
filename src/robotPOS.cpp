@@ -130,8 +130,9 @@ void robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   union long2Bytes { int32_t l; uint8_t b[4]; };
 
   //Init data vector with size of message
+  std::vector<uint8_t> msgData;
   if(getMsgLengthForType(flagHolders[msg_type_index])){
-    std::vector<uint8_t> msgData(getMsgLengthForType(flagHolders[msg_type_index]));
+   msgData.reserve(getMsgLengthForType(flagHolders[msg_type_index]));
     boost::asio::read(serial_, boost::asio::buffer(msgData));
   }
   ROS_INFO("finished being read");
