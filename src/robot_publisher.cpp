@@ -103,11 +103,11 @@ int main(int argc, char **argv)
       imuOut.header.stamp = ros::Time::now();
 
       if(robot.poll(&odomOut, &imuOut)){
-        ROS_INFO("not skipped");
+        //ROS_INFO("not skipped");
         odomPub.publish(odomOut);
         imuPub.publish(imuOut);
       }else{
-        ROS_INFO("skipped");
+        //ROS_INFO("skipped");
 			}
       ros::spinOnce();
     }

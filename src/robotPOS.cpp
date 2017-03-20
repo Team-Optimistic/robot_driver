@@ -119,25 +119,25 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
   // Load rest of header
   boost::asio::read(serial_, boost::asio::buffer(&flagHolders[msg_type_index], 2));
-  ROS_INFO("Header %d  %d  %d",flagHolders[0],flagHolders[1],flagHolders[2]);
+
+  //ROS_INFO("Header %d  %d  %d",flagHolders[0],flagHolders[1],flagHolders[2]);
   // Verify msg count
  /* if (!verifyMsgHeader(flagHolders[msg_type_index], flagHolders[msg_count_index]))
   {
     //ROS_INFO("robotPOS: poll: Message count invalid (%d) for type %d.", unsigned(flagHolders[msg_count_index]), unsigned(flagHolders[msg_type_index]));
   }
 */
+
   // Load msg
   //Union for converting 4 bytes of a long from RobotC into a int32_t
   union long2Bytes { int32_t l; uint8_t b[4]; };
 
   //Init data vector with size of message
-  std::vector<uint8_t> msgData;
-  if(getMsgLengthForType(flagHolders[msg_type_index])){
-    ROS_INFO("has more to read");
-    msgData.reserve(getMsgLengthForType(flagHolders[msg_type_index]));
-    boost::asio::read(serial_, boost::asio::buffer(msgData));
-  }
-  ROS_INFO("finished being read");
+  const int msglen = unsigned(getMsgLengthForType(flagHolders[msg_type_index]));
+  std::vector<uint8_t> msgData(msglen);
+
+  boost::asio::read(serial_, boost::asio::buffer(msgData, msglen));
+
   //Publish raw bytes for the record
   std_msgs::String cortexOut;
   std::stringstream ss;
@@ -173,11 +173,10 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       const int32_t rightQuad = quads.l;
 
       //Read in dt
-      const int8_t dt = msgData[9];
-     // if(dt ==0)
-     //   return false;
-      ROS_INFO("dt %d",dt);
-       
+      int8_t dt = msgData[9];
+      if (dt == 0)
+      	dt = 15;
+
       //Twist
       const int32_t rightDelta = (rightQuad - lastRightQuad),
       leftDelta = (leftQuad - lastLeftQuad);
