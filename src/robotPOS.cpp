@@ -335,22 +335,27 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 
   std::vector<int8_t> out(msgLength); //Vector holding output bytes
 
-    //Collect points
-  if(didPickUpObjects){
-    for(int index = 0; index < in->points.size(); index++){
+  //Collect points
+  if(didPickUpObjects)
+  {
+    for(int index = 0; index < in->points.size(); index++)
+    {
+      ROS_INFO("generating msg %d", index);
 
       //Convert num to 4 bytes
       conv.l = in->points.at(index).x * 1000;
       for (int i = 0; i < 4; i++)
         out.at(i + index * 9) = conv.b[i];
+
       conv.l = in->points.at(index).y * 1000;
       for (int i = 0; i < 4; i++)
         out.at(4 + i + index * 9) = conv.b[i];
 
-      ROS_INFO("generating msg %d",index );
       out.at(8 + index * 9) = in->points.at(index).z;
-      ROS_INFO("robotPOS: mpc_callback: pushing type %d", in->points.at(index).z);
+
+      ROS_INFO("robotPOS: mpc_callback: pushing type %d", int(in->points.at(index).z));
     }
+
     //Send header
     sendMsgHeader(mpc_msg_type);
     //Send data
