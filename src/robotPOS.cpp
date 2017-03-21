@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <cmath>
+#include <algorithm>
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
@@ -334,6 +335,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
   constexpr int msgLength = 27; //Length of output msg must be constant
 
   std::vector<int8_t> out(msgLength); //Vector holding output bytes
+  std::fill(out.begin(), out.end(), 255);
 
   //Collect points
   if(didPickUpObjects)
