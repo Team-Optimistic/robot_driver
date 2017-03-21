@@ -15,7 +15,7 @@
     <param name="scan_topic_name" value="lidar/scan" type="str" />
     <param name="lidar_rpm_topic_name" value="lidar/rpm" type="str" />
     <param name="baud_rate" value="115200" type="int" />
-    <param name="max_rangle" value="1.75" type="int" />
+    <param name="max_range" value="1.75" type="int" />
   </node>
 
   <node pkg="motion_path_creator" type="motion_path_creator" name="motion_path_creator" clear_params="true" output="screen" />
