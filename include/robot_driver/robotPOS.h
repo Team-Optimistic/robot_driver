@@ -76,7 +76,7 @@ class robotPOS
     uint32_t baud_rate_; //serial baud rate
 
     //odom math
-    const float straightConversion = 0.72038464762, thetaConversion = 0.00270938;
+    const float straightConversion = 0.716457354, thetaConversion = 0.00270938;
 
     mpu6000 imu_;
     double channel0Bias = 0, channel1Bias = 0, channel2RotBias = 0; //imu constant offsets measured at init time
