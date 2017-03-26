@@ -55,7 +55,6 @@ imu_(csChannel, speed)
 {
   serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate_));
 
-  mpcPub = n.advertise<sensor_msgs::PointCloud2>("robotPOS/pickedUpObjects", 10);
   cortexPub = n.advertise<std_msgs::String>("robotPOS/cortexPub", 10);
   ekfSub = n.subscribe<nav_msgs::Odometry>("odometry/filtered", 10, &robotPOS::ekf_callback, this);
   mpcSub = n.subscribe<sensor_msgs::PointCloud>("mpc/nextObjects", 10, &robotPOS::mpc_callback, this);
@@ -224,11 +223,6 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
     case mpc_msg_type:
     {
       ROS_INFO("robotPOS: saw mpc request");
-
-      //Publish the objects that got picked up
-      //sensor_msgs::PointCloud2 out;
-      //sensor_msgs::convertPointCloudToPointCloud2(cloud, out);
-      //mpcPub.publish(out);
 
       //Set flag
       didPickUpObjects = true;

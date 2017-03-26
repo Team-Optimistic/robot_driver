@@ -120,7 +120,7 @@ class robotPOS
     const boost::array<float, 9> emptyIMUCov = {{0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
     ros::NodeHandle n;
-    ros::Publisher spcPub, mpcPub, cortexPub;
+    ros::Publisher spcPub, cortexPub;
     ros::Subscriber ekfSub, mpcSub, lidarRPMSub;
 
     int currentLidarRPM = 250;
