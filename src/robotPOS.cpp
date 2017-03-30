@@ -177,7 +177,7 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       for (int i = 0; i < 4; i++)
         quads.b[i] = msgData[i + 5];
       const int32_t rightQuad = quads.l;
-      ROS_INFO("Robot driver right: %ld  left: %ld",rightQuad,leftQuad);
+     // ROS_INFO("Robot driver right: %ld  left: %ld",rightQuad,leftQuad);
       //Read in dt
       int8_t dt = msgData[9];
       if (dt == 0)
@@ -251,8 +251,8 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   imu->angular_velocity_covariance = emptyIMUCov;
 
   constexpr float gravity = 9.80665;
-  imu->linear_acceleration.y = -1 * ((imu_.read_acc(0) - channel0Bias) * gravity);
-  imu->linear_acceleration.x = (imu_.read_acc(1) - channel1Bias) * gravity;
+  imu->linear_acceleration.y = -1* ((imu_.read_acc(0) - channel0Bias) * gravity);
+  imu->linear_acceleration.x =  (imu_.read_acc(1) - channel1Bias) * gravity;
   imu->linear_acceleration.z =  (imu_.read_acc(2) - channel2Bias) * gravity;
   imu->linear_acceleration_covariance = emptyIMUCov;
   return true;
