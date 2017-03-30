@@ -84,15 +84,21 @@ imu_(csChannel, speed)
   {
     channel0Bias += imu_.read_acc(0);
     channel1Bias += imu_.read_acc(1);
+    channel2Bias += imu_.read_acc(2);
+
     channel2RotBias += imu_.read_rot(2);
   }
 
   channel0Bias /= imuSampleCount;
   channel1Bias /= imuSampleCount;
+  channel2Bias /= imuSampleCount;
+
   channel2RotBias /= imuSampleCount;
 
   ROS_INFO("robotPOS: Channel 0 Bias: %lf", channel0Bias);
   ROS_INFO("robotPOS: Channel 1 Bias: %lf", channel1Bias);
+  ROS_INFO("robotPOS: Channel 2 Bias: %lf", channel2Bias);
+
   ROS_INFO("robotPOS: Channel 2 Rot Bias: %lf", channel2RotBias);
 
   ROS_INFO("robotPOS: IMU CALIBRATION DONE");
@@ -247,7 +253,7 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   constexpr float gravity = 9.80665;
   imu->linear_acceleration.y = -1 * ((imu_.read_acc(0) - channel0Bias) * gravity);
   imu->linear_acceleration.x = (imu_.read_acc(1) - channel1Bias) * gravity;
-  imu->linear_acceleration.z =  gravity; //imu_.read_acc(2) * gravity;
+  imu->linear_acceleration.z =  (imu_.read_acc(2) - channel2Bias) * gravity;
   imu->linear_acceleration_covariance = emptyIMUCov;
   return true;
 }

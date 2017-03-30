@@ -79,7 +79,7 @@ class robotPOS
     const float straightConversion = 0.716457354, thetaConversion = 0.00270938;
 
     mpu6000 imu_;
-    double channel0Bias = 0, channel1Bias = 0, channel2RotBias = 0; //imu constant offsets measured at init time
+    double channel0Bias = 0, channel1Bias = 0, channel2Bias =0, channel2RotBias = 0; //imu constant offsets measured at init time
 
     static const uint8_t std_msg_type = 1, mpc_msg_type = 2;
 
