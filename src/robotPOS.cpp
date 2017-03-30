@@ -171,7 +171,7 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       for (int i = 0; i < 4; i++)
         quads.b[i] = msgData[i + 5];
       const int32_t rightQuad = quads.l;
-
+      ROS_INFO("Robot driver right: %ld  left: %ld",right,left);
       //Read in dt
       int8_t dt = msgData[9];
       if (dt == 0)
