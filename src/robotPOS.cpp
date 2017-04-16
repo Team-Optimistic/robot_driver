@@ -111,6 +111,10 @@ imu_(csChannel, speed)
 * @param imu  IMU data
 */
 //true if odom and imu were filled
+
+constexpr int msgLength = 27; //Length of output msg must be constant
+std::vector<int8_t> out_mpc(msgLength); //Vector holding output bytes
+
 bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 {
   boost::array<uint8_t, 3> flagHolders; //0 = start byte, 1 = msg type, 2 = msg count
@@ -221,7 +225,7 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       odom->pose.pose.position.y = yPosGlobal;
       odom->pose.pose.position.z = 0;
       odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(thetaGlobal);
-      odom->pose.covariance = ODOM_POSE_COV_MAT;
+      odom->pose.covariance = ODOM_POSE_COV_MAT;ssh 
 
       break;
     }
@@ -271,8 +275,7 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 * Callback function for sending ekf position estimate to cortex
 * STD Msg
 */
-constexpr int msgLength = 27; //Length of output msg must be constant
-std::vector<int8_t> out_mpc(msgLength); //Vector holding output bytes
+
 
 
 void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
