@@ -233,6 +233,14 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       //Set flag
       didPickUpObjects = true;
+      //Collect points
+      //Send header
+      sendMsgHeader(mpc_msg_type);
+      //Send data
+      boost::asio::write(serial_, boost::asio::buffer(&out_mpc[0], msgLength));
+      //Set flag
+      didPickUpObjects = false;    
+    }
       return false;
       break;
     }
@@ -263,6 +271,10 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 * Callback function for sending ekf position estimate to cortex
 * STD Msg
 */
+constexpr int msgLength = 27; //Length of output msg must be constant
+std::vector<int8_t> out_mpc(msgLength); //Vector holding output bytes
+
+
 void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 {
   const int msgLength = 13;
@@ -323,24 +335,24 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 
   //Send data
   boost::asio::write(serial_,  boost::asio::buffer(&out[0], msgLength));
+
+
 }
 
 /**
 * Callback function for sending new object positions to cortex
 * MPC Msg
 */
+
+
 void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 {
 
  // Only tell the robot to get more objects if it isn't busy
-  constexpr int msgLength = 27; //Length of output msg must be constant
+  
+  std::fill(out_mpc.begin(), out_mpc.end(), 255);
 
-  std::vector<int8_t> out(msgLength); //Vector holding output bytes
-  std::fill(out.begin(), out.end(), 255);
-
-  //Collect points
-  if(didPickUpObjects)
-  {
+  
     for(int index = 0; index < in->points.size(); index++)
     {
       ROS_INFO("generating msg %d", index);
@@ -348,24 +360,17 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
       //Convert num to 4 bytes
       conv.l = in->points.at(index).x * 1000;
       for (int i = 0; i < 4; i++)
-        out.at(i + index * 9) = conv.b[i];
+        out_mpc.at(i + index * 9) = conv.b[i];
 
       conv.l = in->points.at(index).y * 1000;
       for (int i = 0; i < 4; i++)
-        out.at(4 + i + index * 9) = conv.b[i];
+        out_mpc.at(4 + i + index * 9) = conv.b[i];
 
-      out.at(8 + index * 9) = in->points.at(index).z;
+      out_mpc.at(8 + index * 9) = in->points.at(index).z;
 
-      ROS_INFO("robotPOS: mpc_callback: pushing type %d", int(in->points.at(index).z));
-    }
+      }
 
-    //Send header
-    sendMsgHeader(mpc_msg_type);
-    //Send data
-    boost::asio::write(serial_, boost::asio::buffer(&out[0], msgLength));
-    //Set flag
-    didPickUpObjects = false;
-  }
+    
 }
 
 void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
