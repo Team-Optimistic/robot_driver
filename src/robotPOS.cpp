@@ -225,7 +225,7 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       odom->pose.pose.position.y = yPosGlobal;
       odom->pose.pose.position.z = 0;
       odom->pose.pose.orientation = tf::createQuaternionMsgFromYaw(thetaGlobal);
-      odom->pose.covariance = ODOM_POSE_COV_MAT;ssh 
+      odom->pose.covariance = ODOM_POSE_COV_MAT;
 
       break;
     }
@@ -244,7 +244,6 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       boost::asio::write(serial_, boost::asio::buffer(&out_mpc[0], msgLength));
       //Set flag
       didPickUpObjects = false;    
-    }
       return false;
       break;
     }
