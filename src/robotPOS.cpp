@@ -195,7 +195,8 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 
       const float dist = (avg * straightConversion) / 1000.0, //robots coordinate frame
       dtheta = dif * thetaConversion;
-
+			if(leftDelta > 100 || leftDelta < -100)
+				ROS_INFO("serious issues %d",leftDelta);
       const float theta = thetaGlobal + dtheta;
 
       const float dx = cos(theta) * dist, //world coordinate frame
