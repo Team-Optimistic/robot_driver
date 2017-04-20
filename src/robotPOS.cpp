@@ -47,6 +47,8 @@
 
 #include "robot_driver/robotPOS.h"
 
+constexpr float gravity = 9.80665;
+
 robotPOS::robotPOS(const std::string &port, const uint32_t baud_rate, boost::asio::io_service &io, const int csChannel, const long speed):
 port_(port),
 baud_rate_(baud_rate),
@@ -175,12 +177,12 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       //Read in left quads from 4 byte union
       for (int i = 0; i < 4; i++)
         quads.b[i] = msgData[i + 1];
-      const int32_t leftQuad = quads.l;
+      int32_t leftQuad = quads.l;
 
       //Read in right quads from 4 byte union
       for (int i = 0; i < 4; i++)
         quads.b[i] = msgData[i + 5];
-      const int32_t rightQuad = quads.l;
+      int32_t rightQuad = quads.l;
      // ROS_INFO("Robot driver right: %ld  left: %ld",rightQuad,leftQuad);
 
       //Read in dt
@@ -188,7 +190,13 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       if (dt == 0)
       	dt = 15;
 
-	
+      //Assume we are not moving if we tipped backwards
+      if ((imu_.read_acc(2) - channel2Bias) * gravity < 0.95 * gravity)
+      {
+        leftQuad = lastLeftQuad;
+        rightQuad = lastRightQuad;
+        ROS_INFO("robot_driver: tipped too far!");
+      }
 
       //Twist
       const int32_t rightDelta = (rightQuad - lastRightQuad),
@@ -198,19 +206,22 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
       lastLeftQuad = leftQuad;
 
       const float avg = (rightDelta + leftDelta) / 2.0,
-      dif = (rightDelta - leftDelta) / 2.0;
+                  dif = (rightDelta - leftDelta) / 2.0;
 
       const float dist = (avg * straightConversion) / 1000.0, //robots coordinate frame
       dtheta = dif * thetaConversion;
-			if(leftDelta > 100 || leftDelta < -100)
+      
+      //Print if left quad moved a lot in one timestep
+			if (leftDelta > 100 || leftDelta < -100)
 				ROS_INFO("serious issues %d",leftDelta);
+				
       const float theta = thetaGlobal + dtheta;
 
       const float dx = cos(theta) * dist, //world coordinate frame
-      dy = sin(theta) * dist;
+                  dy = sin(theta) * dist;
 
       const float v = 1000* dist / dt,
-      vtheta = 1000 * dtheta / dt;
+                  vtheta = 1000 * dtheta / dt;
 
       odom->twist.twist.linear.x = v;
       odom->twist.twist.linear.y = 0;
@@ -265,7 +276,6 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
   imu->angular_velocity.z = (imu_.read_rot(2) - channel2RotBias) * dpsToRps;
   imu->angular_velocity_covariance = emptyIMUCov;
 
-  constexpr float gravity = 9.80665;
   imu->linear_acceleration.y = -1* ((imu_.read_acc(0) - channel0Bias) * gravity);
   imu->linear_acceleration.x =  (imu_.read_acc(1) - channel1Bias) * gravity;
   imu->linear_acceleration.z =  (imu_.read_acc(2) - channel2Bias) * gravity;
@@ -277,9 +287,6 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
 * Callback function for sending ekf position estimate to cortex
 * STD Msg
 */
-
-
-
 void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 {
   const int msgLength = 13;
@@ -340,21 +347,16 @@ void robotPOS::ekf_callback(const nav_msgs::Odometry::ConstPtr& in)
 
   //Send data
   boost::asio::write(serial_,  boost::asio::buffer(&out[0], msgLength));
-
-
 }
 
 /**
 * Callback function for sending new object positions to cortex
 * MPC Msg
 */
-
-
 void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
 {
 
  // Only tell the robot to get more objects if it isn't busy
-  
   std::fill(out_mpc.begin(), out_mpc.end(), 255);
 
   
@@ -372,10 +374,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
         out_mpc.at(4 + i + index * 9) = conv.b[i];
 
       out_mpc.at(8 + index * 9) = in->points.at(index).z;
-
       }
-
-    
 }
 
 void robotPOS::lidarRPM_callback(const std_msgs::UInt16::ConstPtr& in)
