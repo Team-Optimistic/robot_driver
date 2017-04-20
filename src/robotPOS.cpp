@@ -182,10 +182,13 @@ bool robotPOS::poll(nav_msgs::Odometry *odom, sensor_msgs::Imu *imu)
         quads.b[i] = msgData[i + 5];
       const int32_t rightQuad = quads.l;
      // ROS_INFO("Robot driver right: %ld  left: %ld",rightQuad,leftQuad);
+
       //Read in dt
       int8_t dt = msgData[9];
       if (dt == 0)
       	dt = 15;
+
+	
 
       //Twist
       const int32_t rightDelta = (rightQuad - lastRightQuad),
@@ -357,7 +360,7 @@ void robotPOS::mpc_callback(const sensor_msgs::PointCloud::ConstPtr& in)
   
     for(int index = 0; index < in->points.size(); index++)
     {
-      ROS_INFO("generating msg %d", index);
+//      ROS_INFO("generating msg %d", index);
 
       //Convert num to 4 bytes
       conv.l = in->points.at(index).x * 1000;

@@ -34,6 +34,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/transform_broadcaster.h>
 #include <boost/asio.hpp>
 #include <std_msgs/UInt16.h>
@@ -62,6 +63,8 @@ int main(int argc, char **argv)
 
   boost::asio::io_service io;
   tf::Transform transform;
+
+  ros::Publisher filterFix = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("set_pose", 10);
 
   try
   {
@@ -97,6 +100,8 @@ int main(int argc, char **argv)
     odomPub.publish(odomOut);
     imuPub.publish(imuOut);
 
+	bool firstPub = true;
+
     while (ros::ok())
     {
       odomOut.header.stamp = ros::Time::now();
@@ -108,7 +113,33 @@ int main(int argc, char **argv)
         imuPub.publish(imuOut);
       }else{
         //ROS_INFO("skipped");
-			}
+    	}
+
+	if (firstPub)
+	{
+		geometry_msgs::PoseWithCovarianceStamped msg;
+		msg.header.stamp = ros::Time::now();
+		msg.pose.pose.position.x = 0;
+		msg.pose.pose.position.y = 0;
+		msg.pose.pose.position.z = 0;
+		msg.pose.pose.orientation.x = 0;
+		msg.pose.pose.orientation.y = 0;
+		msg.pose.pose.orientation.z = 0;
+		msg.pose.pose.orientation.w = 1;
+		const boost::array<float, 36> cov =
+			{{
+			  1e-6, 0,    0,    0,    0,    0,
+			  0,    1e-6, 0,    0,    0,    0,
+			  0,    0,    1e-6, 0,    0,    0,
+			  0,    0,    0,    1e-6, 0,    0,
+			  0,    0,    0,    0,    1e-6, 0,
+			  0,    0,    0,    0,    0,    1e-6
+			}};
+		msg.pose.covariance = cov;
+		filterFix.publish(msg);
+		firstPub = false;
+	}
+
       ros::spinOnce();
     }
 
